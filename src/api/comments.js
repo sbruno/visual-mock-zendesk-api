@@ -19,7 +19,7 @@ export function apiGetTicketComments(ticketId) {
         results.push(comment)
     }
 
-    return { comments:results, otherPagesRemain:false, next_page:undefined, count: results.length}
+    return { comments: results, otherPagesRemain: false, next_page: undefined, count: results.length }
 }
 
 /**
@@ -43,7 +43,7 @@ export function transformIncomingCommentIntoInternal(globalState, obj, fallbackA
     if (obj.uploads || obj.attachments) {
         throw new Error('we do not yet support attachments')
     }
-    
+
     return {
         id: generateCommentId(globalState.persistedState),
         created_at: obj.created_at || getCurrentTimestamp(),

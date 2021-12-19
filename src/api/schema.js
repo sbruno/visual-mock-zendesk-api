@@ -25,11 +25,11 @@ export function validateInternalUser(obj) {
         name: yup.string().required(),
         email: yup.string().required(),
         created_at: yup.string().required(),
-      }).noUnknown(true).required();
+    }).noUnknown(true).required();
 
-      doValidateForInternal(schema, obj) 
-      checkIsoDateOrThrow(obj.created_at)
-      return obj
+    doValidateForInternal(schema, obj)
+    checkIsoDateOrThrow(obj.created_at)
+    return obj
 }
 
 /**
@@ -67,10 +67,12 @@ export function validateInternalTicket(obj) {
         // via: not yet implemented
         custom_fields: yup.array().of(yup.object({
             id: yup.number().required().positive().integer(),
-            value: yup.mixed().required()})).required(),
+            value: yup.mixed().required()
+        })).required(),
         fields: yup.array().of(yup.object({
             id: yup.number().required().positive().integer(),
-            value: yup.mixed().required()})).required(),
+            value: yup.mixed().required()
+        })).required(),
         // satisfaction_rating: not yet implemented
         // sharing_agreement_ids: not yet implemented
         // followup_ids: not yet implemented
@@ -83,7 +85,7 @@ export function validateInternalTicket(obj) {
         comment_ids: yup.array().of(yup.number()).required(), // not present in Zendesk
     }).noUnknown(true).required();
 
-    doValidateForInternal(schema, obj) 
+    doValidateForInternal(schema, obj)
     checkIsoDateOrThrow(obj.created_at)
     checkIsoDateOrThrow(obj.updated_at)
     if (!Statuses.includes(obj.status)) {
@@ -115,7 +117,7 @@ export function validateInternalComment(obj) {
         // metadata: not yet implemented
     }).noUnknown(true).required();
 
-    doValidateForInternal(schema, obj) 
+    doValidateForInternal(schema, obj)
     checkIsoDateOrThrow(obj.created_at)
     checkIsoDateOrThrow(obj.updated_at)
     return obj
@@ -172,7 +174,7 @@ function checkIsoDateOrThrow(s) {
     try {
         const d = new Date(s)
         assert(d instanceof Date && !isNaN(d), 'date could not be parsed')
-    } catch(e) {
+    } catch (e) {
         throw new Error('failed to parse iso date ' + s + e)
     }
 }
@@ -198,10 +200,10 @@ function doValidateForInternal(schema, obj) {
     // strict: do not 'parse', important because internally we want to enforce the int/str distinction,
     // for example, when getting data from outside, we'll accept either a string or int for id,
     // but when persisting in db, always store int ids and we need strict:true to actually enforce that. 
-    schema.validateSync(obj, {stripUnknown: false, strict:true}) 
+    schema.validateSync(obj, { stripUnknown: false, strict: true })
 }
 
 /**
  * Values for status. hold isn't enabled by default iirc.
  */
-export const Statuses = ["new" , "open" , "pending" , "hold" , "solved" , "closed"]
+export const Statuses = ["new", "open", "pending", "hold", "solved", "closed"]

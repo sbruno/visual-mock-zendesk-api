@@ -16,7 +16,7 @@ export function getPortNumber() {
  */
 export function generateUserId(persistedState) {
     assert(persistedState['users'])
-    for (let i=0; i<5; i++) {
+    for (let i = 0; i < 5; i++) {
         let candidate = genCandidate()
         if (!persistedState['users'][candidate]) {
             return candidate
@@ -31,7 +31,7 @@ export function generateUserId(persistedState) {
  */
 export function generateCommentId(persistedState) {
     assert(persistedState['comments'])
-    for (let i=0; i<5; i++) {
+    for (let i = 0; i < 5; i++) {
         let candidate = genCandidate()
         if (!persistedState['comments'][candidate]) {
             return candidate
@@ -47,7 +47,7 @@ export function generateCommentId(persistedState) {
  */
 export function generateTicketId(persistedState) {
     assert(persistedState['tickets'])
-    for (let i=0; i<5; i++) {
+    for (let i = 0; i < 5; i++) {
         let candidate = genCandidate()
         if (!persistedState['tickets'][candidate]) {
             return candidate
@@ -63,7 +63,7 @@ export function generateTicketId(persistedState) {
  */
 export function generateJobId(globalState) {
     assert(globalState['jobResults'])
-    for (let i=0; i<5; i++) {
+    for (let i = 0; i < 5; i++) {
         let candidate = genCandidate()
         if (!globalState['jobResults'][candidate]) {
             return candidate

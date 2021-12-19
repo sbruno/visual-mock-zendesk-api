@@ -6,7 +6,7 @@ import { addJobResultToMemory, generateTicketId, getCurrentTimestamp, normalizeI
 import { insertPersistedComment, insertPersistedTicket, insertPersistedUser, updatePersistedTicket, validateInternalTicket } from "./schema.js"
 import { getDefaultAdminId, getGlobalState, getGlobalStateCopy, saveGlobalState } from "../persist.js"
 import { renderPendingJob } from "./jobresults.js"
-import {  transformIncomingUserIntoInternal, usersSearchByEmailImpl } from "./users.js"
+import { transformIncomingUserIntoInternal, usersSearchByEmailImpl } from "./users.js"
 import { allowShortcutStringComment, transformIncomingCommentIntoInternal } from "./comments.js"
 import { runTriggersOnNewCommentPosted } from "./triggers.js"
 import { intCustomFields } from "./customfields.js";
@@ -33,7 +33,7 @@ export function apiTicketsShowMany(payload) {
     }
 
     result.reverse() // to indicate that there is no guarenteed ordering
-    return {tickets: result}
+    return { tickets: result }
 }
 
 /**
@@ -49,17 +49,17 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
         if (!em || !nm) {
             throw new Error(`attempted inline User but did not pass in an email or name`)
         }
-        
+
         const foundByEmail = usersSearchByEmailImpl(globalState, em)?.users
         if (foundByEmail?.length) {
-            const foundByName = foundByEmail.find(user=>user.name === nm)
+            const foundByName = foundByEmail.find(user => user.name === nm)
             if (foundByName) {
                 obj[keyId] = normalizeId(foundByName.id)
             } else {
                 throw new Error(`attempted inline User but did name does not match existing user with this email`)
             }
         } else {
-            const resultUser = transformIncomingUserIntoInternal(globalState, {name: nm, email:em})
+            const resultUser = transformIncomingUserIntoInternal(globalState, { name: nm, email: em })
             insertPersistedUser(globalState, resultUser)
             console.log(`Created an inline User.`)
             obj[keyId] = resultUser.id
@@ -88,13 +88,13 @@ export function apiTicketsImportCreateMany(payload) {
             ticket.comments = [ticket.comment]
         }
 
-        for (let [j, comment] of (ticket.comments||[]).entries()) {
+        for (let [j, comment] of (ticket.comments || []).entries()) {
             comment = allowShortcutStringComment(comment)
             allowInlineNewUser(globalState, comment, 'author', 'author_id')
             normalizeIdIfPresent(comment, 'author_id')
 
             // Tricky zendesk logic... this seems to match what happens when author_id is missing
-            const fallbackAuthorId = j === 0 ? normalizeId(resultTicket.requester_id) : getDefaultAdminId() 
+            const fallbackAuthorId = j === 0 ? normalizeId(resultTicket.requester_id) : getDefaultAdminId()
             const c = transformIncomingCommentIntoInternal(globalState, comment, fallbackAuthorId)
             insertPersistedComment(globalState, c)
             resultTicket.comment_ids.push(c.id)
@@ -102,7 +102,7 @@ export function apiTicketsImportCreateMany(payload) {
         }
 
         insertPersistedTicket(globalState, resultTicket)
-        response.push({index: index, id: resultTicket.id, account_id: "not yet implemented", "success": true /* extra */})
+        response.push({ index: index, id: resultTicket.id, account_id: "not yet implemented", "success": true /* extra */ })
     }
 
     // Because this is 'import create many', not 'standard create many', don't run any triggers
@@ -147,7 +147,7 @@ export function apiTicketUpdateMany(payload) {
         }
 
         updatePersistedTicket(globalState, resultTicket)
-        response.push({index: index, id: resultTicket.id, "action":"update", "status":"Updated", "success":true})
+        response.push({ index: index, id: resultTicket.id, "action": "update", "status": "Updated", "success": true })
     }
 
     const newJobId = addJobResultToMemory(globalState, response)
@@ -162,7 +162,7 @@ export function apiTicketUpdateMany(payload) {
  * Ensures only valid data is being sent in.
  */
 function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
-    current = {...current}
+    current = { ...current }
     if (current.status == 'closed') {
         throw new Error('cannot update a closed ticket')
     }
@@ -171,9 +171,9 @@ function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
         current.subject = incomingUpdate.subject
     }
 
-    if (incomingUpdate.assignee_email||
-        incomingUpdate.group_id||incomingUpdate.organization_id||incomingUpdate.collaborator_ids ||
-        incomingUpdate.additional_collaborators||incomingUpdate.followers||incomingUpdate.priority||incomingUpdate.email_ccs) {
+    if (incomingUpdate.assignee_email ||
+        incomingUpdate.group_id || incomingUpdate.organization_id || incomingUpdate.collaborator_ids ||
+        incomingUpdate.additional_collaborators || incomingUpdate.followers || incomingUpdate.priority || incomingUpdate.email_ccs) {
         throw new Error("cannot update this property, not yet implemented")
     }
 
@@ -198,7 +198,7 @@ function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
 
     if (incomingUpdate.remove_tags) { // less documented, but does work on latest api
         assert(Array.isArray(incomingUpdate.remove_tags), 'remove_tags must be an array')
-        current.tags = current.tags.filter(t=>!incomingUpdate.remove_tags.includes(t))
+        current.tags = current.tags.filter(t => !incomingUpdate.remove_tags.includes(t))
     }
 
     if (incomingUpdate.tags) {
@@ -206,20 +206,20 @@ function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
         current.tags = lodash.uniq(current.tags)
     }
 
-    if (incomingUpdate.external_id||incomingUpdate.problem_id||incomingUpdate.due_at||
-        incomingUpdate.updated_stamp||incomingUpdate.sharing_agreement_ids||incomingUpdate.macro_ids ||
+    if (incomingUpdate.external_id || incomingUpdate.problem_id || incomingUpdate.due_at ||
+        incomingUpdate.updated_stamp || incomingUpdate.sharing_agreement_ids || incomingUpdate.macro_ids ||
         incomingUpdate.attribute_value_ids) {
         throw new Error("cannot update this property, not yet implemented")
     }
-    
+
     intCustomFields(incomingUpdate.custom_fields)
     if (incomingUpdate.custom_fields) {
         // confirmed in zendesk api that this merges in, not replaces
         // put it in this order so that incoming vals are prioritized
         current.custom_fields = [...incomingUpdate.custom_fields, ...current.custom_fields]
-        current.custom_fields = lodash.uniqBy(current.custom_fields, fld=>fld.id)
+        current.custom_fields = lodash.uniqBy(current.custom_fields, fld => fld.id)
     }
-    
+
     // ignore safe_update for now, would be good to implement in the future for testing race conditions
     current.updated_at = getCurrentTimestamp()
     return current
@@ -231,10 +231,10 @@ function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
  */
 function transformIncomingTicketImportIntoInternal(globalState, obj) {
     assert(!obj.id, `new ticket - cannot specify id`)
-    if (obj.external_id || obj.type ||  obj.priority || obj.recipient 
-        || obj.organization_id || obj.group_id || obj.collaborator_ids || obj.collaborators || 
+    if (obj.external_id || obj.type || obj.priority || obj.recipient
+        || obj.organization_id || obj.group_id || obj.collaborator_ids || obj.collaborators ||
         obj.follower_ids || obj.email_cc_ids || obj.via_followup_source_id || obj.macro_ids ||
-         obj.ticket_form_id || obj.brand_id) {
+        obj.ticket_form_id || obj.brand_id) {
         throw new Error("cannot set this property, not yet implemented")
     }
 
@@ -249,7 +249,7 @@ function transformIncomingTicketImportIntoInternal(globalState, obj) {
     return {
         id: generateTicketId(globalState.persistedState),
         created_at: obj.created_at || getCurrentTimestamp(),
-        updated_at: obj.updated_at ||obj.created_at || getCurrentTimestamp(),
+        updated_at: obj.updated_at || obj.created_at || getCurrentTimestamp(),
         subject: (obj.subject || obj.raw_subject || '(no subject given)'),
         raw_subject: (obj.subject || obj.raw_subject || '(no subject given)'),
         status: obj.status || 'open',

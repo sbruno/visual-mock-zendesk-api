@@ -6,7 +6,7 @@ import lodash from 'lodash';
  * Take a ticket object and add some properties, to get everything needed to display to the user.
  */
 export function renderTicketProps(t) {
-    t = {...t}
+    t = { ...t }
     t.custom_fields_rendered = renderCustomFields(t)
     t.created_at_rendered = renderDate(t.created_at)
     t.updated_at_rendered = renderDate(t.updated_at)
@@ -35,7 +35,7 @@ export function renderUsername(userId, fld) {
 export function renderDate(s) {
     try {
         var d = new Date(s)
-        return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}` 
+        return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`
     } catch (e) {
         return '<unknown date>'
     }
@@ -47,11 +47,11 @@ export function renderDate(s) {
 export function renderTicketComments(tId) {
     const globalState = getGlobalState()
     const t = globalState.persistedState.tickets[tId]
-    const result = { 
+    const result = {
         comments: t.comment_ids.map(cId => renderTicketComment(cId))
     }
 
-    result.comments = lodash.sortBy(result.comments, c=>new Date(c.created_at)?.valueOf())
+    result.comments = lodash.sortBy(result.comments, c => new Date(c.created_at)?.valueOf())
     return result
 }
 
@@ -61,7 +61,7 @@ export function renderTicketComments(tId) {
 export function renderTicketComment(cId) {
     const globalState = getGlobalState()
     let c = globalState.persistedState.comments[cId]
-    c = {...c}
+    c = { ...c }
     c.created_at_rendered = renderDate(c.created_at)
     c.updated_at_rendered = renderDate(c.updated_at)
     c.author_rendered = renderUsername(c.author_id, 'name')

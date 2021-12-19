@@ -50,11 +50,11 @@ class FilterStatus extends BaseFilter {
         }
 
         if (this.includeThese.length) {
-            return (t)=>this.includeThese.includes(t.status)
+            return (t) => this.includeThese.includes(t.status)
         } else if (this.excludeThese.length) {
-            return (t)=>!this.excludeThese.includes(t.status)
+            return (t) => !this.excludeThese.includes(t.status)
         } else {
-            return (t)=>true
+            return (t) => true
         }
     }
 }
@@ -69,21 +69,21 @@ class FilterByTag extends BaseFilter {
         }
 
         if (this.includeThese.length) {
-            return (t)=>{
+            return (t) => {
                 if (!t?.tags?.length) {
                     return false
                 }
                 return t.tags.some(tag => this.includeThese.includes(tag))
             }
         } else if (this.excludeThese.length) {
-            return (t)=>{
+            return (t) => {
                 if (!t?.tags?.length) {
                     return true
                 }
                 return !t.tags.some(tag => this.excludeThese.includes(tag))
             }
         } else {
-            return (t)=>true
+            return (t) => true
         }
     }
 }
@@ -105,17 +105,17 @@ class FilterCustomField extends BaseFilter {
         }
 
         if (this.includeThese.length) {
-            return (t)=>{
+            return (t) => {
                 const vOrUndefined = getCustomFldVal(t, this.id)
                 return this.includeThese.includes(vOrUndefined)
             }
         } else if (this.excludeThese.length) {
-            return (t)=>{
+            return (t) => {
                 const vOrUndefined = getCustomFldVal(t, this.id)
                 return !this.excludeThese.includes(vOrUndefined)
             }
         } else {
-            return (t)=>true
+            return (t) => true
         }
     }
 }
@@ -153,7 +153,7 @@ export function apiSearch(query, sortBy, sortOrder) {
             filters[id].addInclude(val)
         }
     }
-    
+
     const queryParts = query.split(' ')
     for (let part of queryParts) {
         part = part.trim()
@@ -185,17 +185,17 @@ export function apiSearch(query, sortBy, sortOrder) {
         } else if (part.startsWith('-custom_field_')) {
             const s = part.slice('-custom_field_'.length)
             addCustomFieldFilter(s, true)
-        } 
+        }
     }
 
     let results = Object.values(globalState.persistedState.tickets)
-    results = results.filter(t=> {
+    results = results.filter(t => {
         for (let key of Object.keys(filters)) {
             let filter = filters[key]
-           const filterFn = filter.getFilter()
-           if (!filterFn(t)) {
-            return false
-           }
+            const filterFn = filter.getFilter()
+            if (!filterFn(t)) {
+                return false
+            }
         }
 
         return true
@@ -204,7 +204,7 @@ export function apiSearch(query, sortBy, sortOrder) {
     if (sortBy === 'created_at' || sortBy === 'updated_at') {
         // lexical sort might have been ok, if we knew everything was exactly the same iso8601 format, but that
         // is too much of an assumption. in the future better to store this internally as int milliseconds
-        results = lodash.sortBy(results, t=> {
+        results = lodash.sortBy(results, t => {
             const dtString = t[sortBy]
             const d = new Date(dtString)
             // get milliseconds since epoch

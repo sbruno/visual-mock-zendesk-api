@@ -6,8 +6,8 @@
  * Load feather icons.
  */
 (function () {
-  'use strict'
-  feather.replace()
+    'use strict'
+    feather.replace()
 })()
 
 /**
@@ -111,14 +111,14 @@ function inferCurrentTicketId() {
         alert('Could not parse current ticket id')
         throw new Error('Could not parse current ticket id')
     }
-    
+
     return parseInt(pts[1])
 }
 
 /**
  * Make an api call
  */
-async function callApi(endpoint, method='post', payload=undefined, manual=false) {
+async function callApi(endpoint, method = 'post', payload = undefined, manual = false) {
     if (manual) {
         const obj = JSON.stringify(payload || {})
         const s = `curl 'localhost:8999${endpoint}' -H "Content-Type: application/json" -X POST -d '${obj}'`
@@ -132,16 +132,16 @@ async function callApi(endpoint, method='post', payload=undefined, manual=false)
             "Content-Type": "application/json",
             'Accept': 'application/json, text/plain, */*',
         },
-        body: JSON.stringify(payload || {})      
+        body: JSON.stringify(payload || {})
     }
 
     let response = await fetch(endpoint, options)
     if (response.status >= 200 && response.status < 300) {
         alert('API call succeeded.')
-        setTimeout(()=>location.reload(), 100)
+        setTimeout(() => location.reload(), 100)
     } else {
         let output = await response.text();
         alert('API call failed, details: ' + output)
-        setTimeout(()=>location.reload(), 100)
+        setTimeout(() => location.reload(), 100)
     }
 }

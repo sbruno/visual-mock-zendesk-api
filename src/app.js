@@ -21,17 +21,17 @@ const rootdir = '.'
 
 // Start nunjucks and connect it to express
 nunjucks.configure('views', {
-  autoescape: true,
-  express: app
+    autoescape: true,
+    express: app
 })
 
 // Start sass
 // if indentedSyntax is true, use .sass instead of .scss
 app.use(sassMiddleware({
-  src: path.join(rootdir, 'bootstrap'),
-  dest: path.join(rootdir, 'public'),
-  indentedSyntax: true,
-  sourceMap: true
+    src: path.join(rootdir, 'bootstrap'),
+    dest: path.join(rootdir, 'public'),
+    indentedSyntax: true,
+    sourceMap: true
 }))
 
 // Host static files
@@ -53,14 +53,14 @@ if (useCors) {
 }
 
 // Call onLoad before defining the routes
-onLoad() 
+onLoad()
 webRoutes(app)
 apiRoutes(app)
 
 // Create the server
 const server = http.createServer(app)
 server.listen(getPortNumber().toString(), () => {
-  console.log(`Listening on port ${getPortNumber()}...`)
+    console.log(`Listening on port ${getPortNumber()}...`)
 })
 
 // References:

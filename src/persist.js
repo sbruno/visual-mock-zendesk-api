@@ -32,13 +32,13 @@ export function onLoad() {
     }
 
     if (fs.existsSync('./configs.json')) {
-        const contentConfigs = fs.readFileSync('./configs.json', {encoding:'utf-8'})
+        const contentConfigs = fs.readFileSync('./configs.json', { encoding: 'utf-8' })
         masterGlobalState['globalConfigs'] = JSON.parse(contentConfigs)
     } else {
-       throw new Error('No configs.json was found. Create one with the contents {} if needed.')
+        throw new Error('No configs.json was found. Create one with the contents {} if needed.')
     }
-    
-    const contents = fs.readFileSync('./persistedGlobalState.json', {encoding:'utf-8'})
+
+    const contents = fs.readFileSync('./persistedGlobalState.json', { encoding: 'utf-8' })
     masterGlobalState['persistedState'] = JSON.parse(contents)
     masterGlobalState['jobResults'] = {}
 }
@@ -60,9 +60,9 @@ export function resetPersistedState() {
         tickets: {},
         comments: {},
     }
-    
+
     const s = JSON.stringify(empty, null, 1)
-    fs.writeFileSync('./persistedGlobalState.json', s, {encoding:'utf-8'})
+    fs.writeFileSync('./persistedGlobalState.json', s, { encoding: 'utf-8' })
 }
 
 /**
@@ -89,10 +89,10 @@ export function getGlobalStateCopy() {
 /**
  * Commit the changes to disk
  */
-export function saveGlobalState(copyGlobalState=undefined) {
+export function saveGlobalState(copyGlobalState = undefined) {
     copyGlobalState = copyGlobalState || masterGlobalState
     const s = JSON.stringify(copyGlobalState['persistedState'], null, 1)
-    fs.writeFileSync('./persistedGlobalState.json', s, {encoding:'utf-8'})
+    fs.writeFileSync('./persistedGlobalState.json', s, { encoding: 'utf-8' })
     masterGlobalState = copyGlobalState
 }
 
