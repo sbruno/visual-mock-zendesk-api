@@ -4,6 +4,7 @@
   "description": "Mock of the zendesk api, plus a ui",
   "main": "index.js",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "bootstrap": "^5.2.3",
     "express": "^4.18.2",

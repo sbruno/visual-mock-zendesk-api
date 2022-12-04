@@ -2,13 +2,19 @@
 // https://regbrain.com/article/bootstrap-express
 //https://www.edureka.co/blog/rest-api-with-node-js/
 // Run 'node app' to launch.
-let express = require('express')
-let http = require('http')
-let nunjucks = require('nunjucks')
-let path = require('path')
-let sassMiddleware = require('node-sass-middleware')
+import express from 'express';
+import http from 'http';
+import nunjucks from 'nunjucks';
+import path from 'path';
+import sassMiddleware from 'node-sass-middleware';
+//~ let express = require('express')
+//~ let http = require('http')
+//~ let nunjucks = require('nunjucks')
+//~ let path = require('path')
+//~ let sassMiddleware = require('node-sass-middleware')
 
 let app = express()
+const rootdir = '.'
 
 nunjucks.configure('views', {
   autoescape: true,
@@ -16,13 +22,13 @@ nunjucks.configure('views', {
 })
 
 app.use(sassMiddleware({
-  src: path.join(__dirname, 'bootstrap'),
-  dest: path.join(__dirname, 'public'),
+  src: path.join(rootdir, 'bootstrap'),
+  dest: path.join(rootdir, 'public'),
   indentedSyntax: true, // true = .sass and false = .scss
   sourceMap: true
 }))
 
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(rootdir, 'public')))
 
 app.get('/', function(req, res, next) {
   let  data = {
@@ -35,7 +41,7 @@ app.get('/', function(req, res, next) {
 
 let server = http.createServer(app)
 
-server.listen('3000', () => {
-  console.log('Listening on port 3000')
+server.listen('8999', () => {
+  console.log('Listening on port 8999...')
 })
 
