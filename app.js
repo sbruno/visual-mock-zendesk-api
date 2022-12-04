@@ -7,6 +7,9 @@ import http from 'http';
 import nunjucks from 'nunjucks';
 import path from 'path';
 import sassMiddleware from 'node-sass-middleware';
+import { onLoad } from './persist.js';
+import { webRoutes } from './webroutes.js';
+import { apiRoutes } from './api/apiroutes.js';
 
 let app = express()
 const rootdir = '.'
@@ -25,13 +28,8 @@ app.use(sassMiddleware({
 
 app.use(express.static(path.join(rootdir, 'public')))
 
-app.get('/', function(req, res, next) {
-  let data = {
-    content: 'Hello world!',
-  }
-
-  res.render('index.njk', data)
-})
+webRoutes(app)
+apiRoutes(app)
 
 let server = http.createServer(app)
 
@@ -39,3 +37,4 @@ server.listen('8999', () => {
   console.log('Listening on port 8999...')
 })
 
+onLoad()

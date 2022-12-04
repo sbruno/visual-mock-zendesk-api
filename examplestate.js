@@ -23,24 +23,28 @@
                 custom_fields: {}, // we just store what they send us
                 fields: {}, // we just store what they send us
                 // send back the comment_count
-                comments: [{
-                    id: '345345',
-                    created_at: '123',
-                    modified_at: '456',
-                    body: 'ab',
-                    html_body: 'ab',
-                    plain_body: 'ab',
-                    public: true,
-                    author_id: 234,
-                    attachments: [{
-                        id: 23423423,
-                        content_type: 'image/png',
-                        // send back the content_url: 'http://localhost:2343/56',
-                    }]
-                    }
-                ]
+                comments: ['345345']
+                }
             }
         },
+        comments: {
+            '345345': {
+            id: '345345',
+            created_at: '123',
+            modified_at: '456',
+            body: 'ab',
+            html_body: 'ab',
+            plain_body: 'ab',
+            public: true,
+            author_id: 234,
+            attachments: [{
+                id: 23423423,
+                content_type: 'image/png',
+                // send back the content_url: 'http://localhost:2343/56',
+            }
+            }
+        }
+        ]
 
     }
 }

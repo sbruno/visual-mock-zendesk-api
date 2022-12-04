@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
-    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="author" content="Ben Fisher, based on bootstrap code by Mark Otto, Jacob Thornton">
     <meta name="generator" content="Jekyll v4.1.1">
     <title>Zendesk Mock</title>
 
@@ -31,7 +31,7 @@
     <link href="/working_on_ui/dashboard.css" rel="stylesheet">
   </head>
   <body>
-    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+  <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
   <a class="navbar-brand col-md-3 col-lg-2 mr-0 px-3" href="#">Mock Zendesk</a>
   <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-toggle="collapse" data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
@@ -40,69 +40,44 @@
   </ul>
 </nav>
 
+{% macro renderTicketRow(objTicket) %}
+  <tr>
+    <td><a href="/web/tickets/{{ objTicket.id }}">{{ objTicket.id }}</a></td>
+    <td>{{ objTicket.plain_body }}</td>
+    <td>{{ objTicket.render_requester }}</td>
+    <td>{{ objTicket.render_date }}</td>
+    <td>{{ objTicket.render_status }}</td>
+  </tr>
+{% endmacro %}
+
 <div class="container-fluid">
   <div class="row">
     <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
       <div class="sidebar-sticky pt-3">
         <ul class="nav flex-column">
           <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="/web/tickets-open">
               <span data-feather="file"></span>
               Open Tickets
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="/web/tickets-resolved">
               <span data-feather="file"></span>
               Resolved Tickets
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="/web/tickets-new">
               <span data-feather="file"></span>
               New Ticket
             </a>
           </li>
-       
         </ul>
       </div>
     </nav>
-
     <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Tickets {{ content }}</h1>
-      </div>
-
-      <div class="table-responsive">
-        <table class="table table-striped table-sm">
-          <tbody>
-            <tr>
-              <td><a href="#">45</a></td>
-              <td>I'm having problems with my order</td>
-              <td>Sophie W</td>
-              <td>03/04/2022</td>
-              <td>Resolved</td>
-            </tr>
-            <tr>
-                <td><a href="#">46</a></td>
-                <td>Office message from Jane Doe</td>
-                <td>Jane Doe</td>
-                <td>03/04/2022</td>
-                <td>Resolved</td>
-            </tr>
-            <tr>
-              <td><a href="#">47</a></td>
-              <td>I need to reset my password</td>
-              <td>John Shafer</td>
-              <td>03/04/2022</td>
-              <td>Pending</td>
-            </tr>
-            
-          </tbody>
-        </table>
-        <br/><br/><br/><br/><br/>
-        <button>Delete All</button>
-      </div>
+      {% block content %}{% endblock %}
     </main>
   </div>
 </div>

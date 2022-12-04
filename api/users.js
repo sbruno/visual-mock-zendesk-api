@@ -1,8 +1,10 @@
 
 import assert from "assert";
-import { addJobResultToMemory, getCurrentTime } from "./helpers";
+import { saveGlobalState, getGlobalStateCopy, getGlobalState } from "../persist.js";
+import { addJobResultToMemory, getCurrentTime } from "./helpers.js";
 
-export function create_many_users(globalState, payload) {
+export function createManyUsers(payload) {
+    const globalState = getGlobalStateCopy()
     payload = payload['users']
     const result = []
     for (let userInfo of payload) {
@@ -24,6 +26,7 @@ export function create_many_users(globalState, payload) {
         job_status: {status: 'completed', results: result},
     }
     addJobResultToMemory(globalState, fullResult)
+    saveGlobalState(globalState)
 }
 
 function emailCannotExistTwice(globalState, email) {
@@ -32,6 +35,23 @@ function emailCannotExistTwice(globalState, email) {
         if (user.email === email) {
             assert(false, 'user with this email already exists ' + email)
         }
+    }
+}
+
+// /api/v2/users/search?query=email:encodeURIComponent(email)
+export function searchByEmail(email) {
+    console.log('looking for email|' + email + '|')
+    const globalState = getGlobalState()
+    const allUsers = globalState.persistedState.users
+    let results = []
+    for (let user of allUsers) {
+        if (user.email === email) {
+            results.push(user)
+        }
+    }
+    return {
+        count: results.length,
+        users: results
     }
 }
 

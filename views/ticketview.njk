@@ -1,0 +1,45 @@
+
+
+{% extends "index.njk" %} 
+{% block content %}
+       <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Viewing Ticket #45</h1>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <tbody>
+            <tr>
+              <td><a href="#">45</a></td>
+              <td>I'm having problems with my order</td>
+              <td>Sophie W</td>
+              <td>03/04/2022</td>
+              <td>Resolved</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-3">
+        <b>03/04/2022
+        From: Sophie W</b><br/>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+      </div>
+      <div class="mt-3">
+        <b>03/04/2022
+        From: Mock Zendesk Admin</b><br/>
+        Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.
+      </div>
+      <div class="mt-3">
+        <form>
+            <textarea></textarea><br/>
+            <input type="checkbox"/> Include mock attachment<br/>
+            <button>Post Reply</button><br/><br/>
+            <button>Mark as Solved</button> <button>Mark as Pending</button>  <button>Mark as Open</button> 
+            <div class="mt-3">
+            <input type="text"/> Tags (separated by |) <button>Set</button>
+                
+            </div>
+        </form>
+    </div>
+{% endblock %}
+

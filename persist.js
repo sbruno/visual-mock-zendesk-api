@@ -4,7 +4,7 @@ import fs from 'fs';
 
 let globalState = {}
 
-function onLoad() {
+export function onLoad() {
     globalState = {}
     if (!fs.existsSync('./persistedGlobalState.json')) {
         resetPersistedState()
@@ -14,7 +14,6 @@ function onLoad() {
     globalState['persistedState'] = JSON.parse(contents)
 }
 
-onLoad()
 
 export function resetPersistedState() {
     const empty = {
@@ -35,7 +34,13 @@ export function getGlobalState() {
     return globalState
 }
 
-export function saveGlobalState() {
-    const s = JSON.stringify(globalState['persistedState'])
+export function getGlobalStateCopy() {
+    const clone = JSON.parse(JSON.stringify(globalState))
+}
+
+export function saveGlobalState(copyGlobalState=undefined) {
+    copyGlobalState = copyGlobalState || globalState
+    const s = JSON.stringify(copyGlobalState['persistedState'])
     fs.writeFileSync('./persistedGlobalState.json', s, {encoding:'utf-8'})
+    globalState = copyGlobalState
 }
