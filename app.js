@@ -1,17 +1,12 @@
 
 // https://regbrain.com/article/bootstrap-express
-//https://www.edureka.co/blog/rest-api-with-node-js/
+// https://www.edureka.co/blog/rest-api-with-node-js/
 // Run 'node app' to launch.
 import express from 'express';
 import http from 'http';
 import nunjucks from 'nunjucks';
 import path from 'path';
 import sassMiddleware from 'node-sass-middleware';
-//~ let express = require('express')
-//~ let http = require('http')
-//~ let nunjucks = require('nunjucks')
-//~ let path = require('path')
-//~ let sassMiddleware = require('node-sass-middleware')
 
 let app = express()
 const rootdir = '.'
@@ -31,9 +26,8 @@ app.use(sassMiddleware({
 app.use(express.static(path.join(rootdir, 'public')))
 
 app.get('/', function(req, res, next) {
-  let  data = {
+  let data = {
     content: 'Hello world!',
-    title: 'Bootstrap example'
   }
 
   res.render('index.njk', data)
