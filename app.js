@@ -10,6 +10,7 @@ import sassMiddleware from 'node-sass-middleware';
 import { onLoad } from './persist.js';
 import { webRoutes } from './webroutes.js';
 import { apiRoutes } from './api/apiroutes.js';
+import { portNumber } from './api/helpers.js';
 
 let app = express()
 const rootdir = '.'
@@ -33,8 +34,8 @@ apiRoutes(app)
 
 let server = http.createServer(app)
 
-server.listen('8999', () => {
-  console.log('Listening on port 8999...')
+server.listen(portNumber.toString(), () => {
+  console.log(`Listening on port ${portNumber}...`)
 })
 
 onLoad()

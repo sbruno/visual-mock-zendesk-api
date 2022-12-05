@@ -1,0 +1,6 @@
+
+
+curl 'http://localhost:8999/api/v2/tickets/111/comments']
+
+curl -d '[{"email":"e1@e.com", "name":"user1"}, {"email":"e2@e.com", "name":"user2"}]' -H "Content-Type: application/json" -X POST http://localhost:8999/api/v2/users/create_many
+

@@ -3,6 +3,8 @@
 import assert from "assert";
 import crypto from 'crypto';
 
+export const portNumber = 8999
+
 export function generateUserId(persistedState) {
     assert(persistedState['zendeskapi']['users'])
     for (let i=0; i<5; i++) {
@@ -45,8 +47,15 @@ export function addJobResultToMemory(globalState, payload) {
     return jobId
 }
 
-export function getCurrentTime() {
-    return 'fthfth'
+export function getCurrentTimestamp() {
+    // 2020-04-09T20:37:31.451Z
+    // 2022-11-27T22:12:23.546Z
+    const dt = new Date()
+    return dt.toISOString()
+}
+
+export function validateJustTheseKeys() {
+
 }
 
 function genCandidate() {

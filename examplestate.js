@@ -4,6 +4,7 @@
     mockZendeskState: {
         users: {
             "1234": {
+                id: 1234,
                 created_at: '123',
                 email: 'abc@test.com',
                 name: 'test name',
@@ -11,6 +12,7 @@
         },
         tickets: {
             '98778': {
+                id: 1234,
                 created_at: '123',
                 modified_at: '456',
                 subject: 'abc',

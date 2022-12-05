@@ -1,6 +1,7 @@
 
 
 import fs from 'fs';
+import { getCurrentTimestamp } from './api/helpers.js';
 
 let globalState = {}
 
@@ -19,7 +20,7 @@ export function resetPersistedState() {
     const empty = {
         users: {'111': {
             id: '111',
-            created_at: '123',
+            created_at: getCurrentTimestamp(),
             email: 'zendeskmockadmin@zendeskmockadmin.com',
             name: 'ZendeskMockAdmin',
         }},
@@ -36,6 +37,7 @@ export function getGlobalState() {
 
 export function getGlobalStateCopy() {
     const clone = JSON.parse(JSON.stringify(globalState))
+    return clone
 }
 
 export function saveGlobalState(copyGlobalState=undefined) {
