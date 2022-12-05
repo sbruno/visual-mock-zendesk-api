@@ -57,7 +57,7 @@ class FilterCustomField extends BaseFilter {
     }
 }
 
-export function goSearch(query, sortBy, sortOrder) {
+export function apiSearch(query, sortBy, sortOrder) {
     sortBy = sortBy || 'created_at'
     sortOrder = sortOrder || 'asc'
     const queryParts = query.split(' ')

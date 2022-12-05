@@ -27,8 +27,7 @@ export function usersCreateMany(payload) {
     payload = payload['users']
     const result = []
     for (const [index, userInfo] of payload.entries()) {
-        assert(userInfo.name, 'must have a name')
-        assert(userInfo.email, 'must have a email')
+        userInfo = validateIncomingUserParams(userInfo)
         emailCannotExistTwice(globalState, userInfo.email) 
         const newId = generateUserId(globalState.persistedState)
         const newUser = validateInternalUser({
