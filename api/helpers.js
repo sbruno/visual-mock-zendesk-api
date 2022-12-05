@@ -6,10 +6,10 @@ import crypto from 'crypto';
 export const portNumber = 8999
 
 export function generateUserId(persistedState) {
-    assert(persistedState['zendeskapi']['users'])
+    assert(persistedState['users'])
     for (let i=0; i<5; i++) {
         let candidate = genCandidate()
-        if (!persistedState['zendeskapi']['users'][candidate]) {
+        if (!persistedState['users'][candidate]) {
             return candidate
         }
     }
@@ -18,10 +18,10 @@ export function generateUserId(persistedState) {
 }
 
 export function generateTicketId(persistedState) {
-    assert(persistedState['zendeskapi']['tickets'])
+    assert(persistedState['tickets'])
     for (let i=0; i<5; i++) {
         let candidate = genCandidate()
-        if (!persistedState['zendeskapi']['tickets'][candidate]) {
+        if (!persistedState['tickets'][candidate]) {
             return candidate
         }
     }
@@ -30,10 +30,10 @@ export function generateTicketId(persistedState) {
 }
 
 export function generateCommentId(persistedState) {
-    assert(persistedState['zendeskapi']['comments'])
+    assert(persistedState['comments'])
     for (let i=0; i<5; i++) {
         let candidate = genCandidate()
-        if (!persistedState['zendeskapi']['comments'][candidate]) {
+        if (!persistedState['comments'][candidate]) {
             return candidate
         }
     }
@@ -43,6 +43,10 @@ export function generateCommentId(persistedState) {
 
 export function addJobResultToMemory(globalState, payload) {
     const jobId = crypto.randomUUID()
+    if (!globalState['jobresults']) {
+        globalState['jobresults'] = {}
+    }
+    
     globalState['jobresults'][jobId] = payload
     return jobId
 }

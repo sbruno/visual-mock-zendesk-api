@@ -6,8 +6,10 @@ import { getCurrentTimestamp, portNumber } from "./helpers.js";
 
 export function getJobById(jobId) {
     const globalState = getGlobalState()
-    const result = globalState['jobresults'][jobId]
-    assert(result, 'job not found ' + jobId)
+    const result = globalState?.['jobresults']?.[jobId]
+    if (!result) {
+        throw new Error(`job not found ${jobId}`)
+    }
     return renderCompletedJob(jobId, result)
 }
 

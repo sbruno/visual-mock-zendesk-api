@@ -2,7 +2,7 @@ import { onLoad, resetPersistedState } from "../persist.js"
 import { getTicketComments } from "./comments.js"
 import { getJobById } from "./jobresults.js"
 import { importCreateMany } from "./tickets.js"
-import { searchByEmail, usersCreateMany } from "./users.js"
+import { searchByEmail, usersCreateMany, usersShowMany } from "./users.js"
 
 
 
@@ -28,6 +28,15 @@ export function apiRoutes(app) {
     app.post('/api/v2/users/create_many', (req, res) => {
         wrapHandler(()=> {
             const result = usersCreateMany(req.body)
+            res.send(result)
+        }, req, res)
+      })
+    app.get('/api/v2/users/show_many', (req, res) => {
+        wrapHandler(()=> {
+            if (!req.query.ids) {
+                throw errNotImplemented('no ids given')
+            }
+            const result = usersShowMany(req.query.ids)
             res.send(result)
         }, req, res)
       })
@@ -73,13 +82,13 @@ export function errNotImplemented(s) {
 const STATUS_NOT_IMPLEMENTED = 405
 const STATUS_BAD_REQUEST = 400
 function wrapHandler(fn, req, res) {
-    try {
+    //~ try {
         fn(req, res)
-    } catch(e) {
-        if (e.message.startsWith('not implemented:')) {
-            res.status(STATUS_NOT_IMPLEMENTED).send({error: e.message});
-        } else {
-            res.status(STATUS_BAD_REQUEST).send({error: e.message});
-        }
-    }
+    //~ } catch(e) {
+        //~ if (e.message.startsWith('not implemented:')) {
+            //~ res.status(STATUS_NOT_IMPLEMENTED).send({error: e.message});
+        //~ } else {
+            //~ res.status(STATUS_BAD_REQUEST).send({error: e.message});
+        //~ }
+    //~ }
 }

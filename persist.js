@@ -27,7 +27,7 @@ export function resetPersistedState() {
         tickets: {},
         comments: {},
     }
-    const s = JSON.stringify(empty)
+    const s = JSON.stringify(empty, null, 1)
     fs.writeFileSync('./persistedGlobalState.json', s, {encoding:'utf-8'})
 }
 
@@ -42,7 +42,7 @@ export function getGlobalStateCopy() {
 
 export function saveGlobalState(copyGlobalState=undefined) {
     copyGlobalState = copyGlobalState || globalState
-    const s = JSON.stringify(copyGlobalState['persistedState'])
+    const s = JSON.stringify(copyGlobalState['persistedState'], null, 1)
     fs.writeFileSync('./persistedGlobalState.json', s, {encoding:'utf-8'})
     globalState = copyGlobalState
 }

@@ -1,8 +1,26 @@
 
 import assert from "assert";
 import { saveGlobalState, getGlobalStateCopy, getGlobalState } from "../persist.js";
-import { addJobResultToMemory, getCurrentTimestamp } from "./helpers.js";
+import { addJobResultToMemory, getCurrentTimestamp,  generateUserId } from "./helpers.js";
+import { renderPendingJob } from "./jobresults.js";
 import { validateInternalUser } from "./schema.js";
+
+export function usersShowMany(payload) {
+    const globalState = getGlobalState()
+    const ids = payload.split(',')
+    const result = []
+    for (let id of ids) {
+        id = id.trim()
+        if (!parseInt(id)) {
+            throw new Error(`not a user id ${id}`)
+        }
+        if (!globalState.persistedState.users[id]) {
+            throw new Error(`user not found ${id}`)
+        }
+        result.push(globalState.persistedState.users[id])
+    }
+    return {users: result}
+}
 
 export function usersCreateMany(payload) {
     const globalState = getGlobalStateCopy()
@@ -12,7 +30,7 @@ export function usersCreateMany(payload) {
         assert(userInfo.name, 'must have a name')
         assert(userInfo.email, 'must have a email')
         emailCannotExistTwice(globalState, userInfo.email) 
-        const newId = generateUserId()
+        const newId = generateUserId(globalState.persistedState)
         const newUser = validateInternalUser({
             id: newId,
             name: userInfo.name,
