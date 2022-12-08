@@ -42,11 +42,11 @@
 
 {% macro renderTicketRow(objTicket) %}
   <tr>
-    <td><a href="/web/tickets/{{ objTicket.id }}">{{ objTicket.id }}</a></td>
+    <td><a href="/agent/tickets/{{ objTicket.id }}">{{ objTicket.id }}</a></td>
     <td>{{ objTicket.plain_body }}</td>
-    <td>{{ objTicket.render_requester }}</td>
-    <td>{{ objTicket.render_date }}</td>
-    <td>{{ objTicket.render_status }}</td>
+    <td>{{ objTicket.requester_rendered }}</td>
+    <td>{{ objTicket.created_at_rendered }}</td>
+    <td>{{ objTicket.status }}</td>
   </tr>
 {% endmacro %}
 

@@ -1,10 +1,22 @@
-import { onLoad, resetPersistedState } from "../persist.js"
+import { getGlobalState, onLoad, resetPersistedState } from "../persist.js"
 import { getTicketComments } from "./comments.js"
 import { getJobById } from "./jobresults.js"
 import { importCreateMany } from "./tickets.js"
 import { searchByEmail, usersCreateMany, usersShowMany } from "./users.js"
 
+/*
+        uri: '/api/v2/users/create_many', // CURLS
+        uri: `/api/v2/users/search?query=email:"${encodeURIComponent(zendeskEmail)}"`
+        uri: `/api/v2/users/show_many?ids=${ids.join(',')}` // CURLS
+        uri: '/api/v2/imports/tickets/create_many' ,
+        uri: '/api/v2/tickets/update_many.json',
+        uri: `/api/v2/tickets/show_many?ids=${ticketIds.join(',')}`
+        uri: `/api/v2/tickets/${ticketId}/comments`,
+        uri: `/api/v2/uploads?filename=${encodeURIComponent(filename)}`,
+        `/api/v2/search.json?query=type:ticket`;
+        job_statuses
 
+*/
 
 export function apiRoutes(app) {
     app.get('/api/v2/users/search', (req, res) => {
@@ -56,7 +68,18 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
-    app.get('/api/v2/job_statuses/:id', (req, res) => {
+        app.get('/api/v2/job_statuses/:id', (req, res) => {
+        wrapHandler(()=> {
+            if (!req.params.id) {
+                throw errNotImplemented('no jobid given')
+            }
+            const jobid = req.params.id.replace('.json', '')
+            const result = getJobById(jobid)
+            res.send(result)
+        }, req, res)
+      })
+      const globalState = getGlobalState()
+      app.get(`${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/:id`, (req, res) => {
         wrapHandler(()=> {
             if (!req.params.id) {
                 throw errNotImplemented('no jobid given')

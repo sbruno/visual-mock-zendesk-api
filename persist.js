@@ -10,6 +10,14 @@ export function onLoad() {
     if (!fs.existsSync('./persistedGlobalState.json')) {
         resetPersistedState()
     }
+
+    if (fs.existsSync('./configs.json')) {
+        const contentConfigs = fs.readFileSync('./configs.json', {encoding:'utf-8'})
+        globalState['globalConfigs'] = JSON.parse(contentConfigs)
+    } else {
+        console.log('Note, continuing without configs.json.')
+        globalState['globalConfigs'] = { overrideJobStatusUrlPrefix: "" }
+    }
     
     const contents = fs.readFileSync('./persistedGlobalState.json', {encoding:'utf-8'})
     globalState['persistedState'] = JSON.parse(contents)

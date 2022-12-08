@@ -14,20 +14,22 @@ export function getJobById(jobId) {
 }
 
 export function renderPendingJob(jobId) {
+    const globalState = getGlobalState()
     return {
         job_status: {
             id: jobId,
-            url: `http://localhost:${portNumber}/api/v2/job_statuses/${jobId}.json`,
+            url: `http://localhost:${portNumber}${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/${jobId}.json`,
             "status":"pending"
         }
     }
 }
 
 export function renderCompletedJob(jobId, payload) {
+    const globalState = getGlobalState()
     return {
         job_status: {
             id: jobId,
-            url: `http://localhost:${portNumber}/api/v2/job_statuses/${jobId}.json`,
+            url: `http://localhost:${portNumber}${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/${jobId}.json`,
             "status":"completed",
             message: `Completed at ${getCurrentTimestamp()}`,
             results: payload

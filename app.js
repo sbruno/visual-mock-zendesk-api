@@ -32,6 +32,8 @@ app.use(express.static(path.join(rootdir, 'public')))
 //~ app.use(express.urlencoded())
 app.use(express.json()) // needed to get post.body
 
+onLoad() // call before defining routes
+
 webRoutes(app)
 apiRoutes(app)
 
@@ -41,4 +43,3 @@ server.listen(portNumber.toString(), () => {
   console.log(`Listening on port ${portNumber}...`)
 })
 
-onLoad()

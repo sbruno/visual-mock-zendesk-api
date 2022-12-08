@@ -1,0 +1,5 @@
+
+
+function renderCustomFields(ticket) {
+    return ''
+}
