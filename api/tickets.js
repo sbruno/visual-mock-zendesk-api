@@ -2,7 +2,7 @@ import { addJobResultToMemory, generateTicketId, getCurrentTimestamp } from "./h
 import { insertPersistedComment, insertPersistedTicket, insertPersistedUser, updatePersistedTicket, validateInternalTicket } from "./schema.js"
 import assert from "assert";
 import lodash from 'lodash'
-import { getDefaultAdminId, getGlobalStateCopy, saveGlobalState } from "../persist.js"
+import { getDefaultAdminId, getGlobalState, getGlobalStateCopy, saveGlobalState } from "../persist.js"
 import { renderPendingJob } from "./jobresults.js"
 import {  transformIncomingUserIntoInternal, usersSearchByEmailImpl } from "./users.js"
 import { transformIncomingCommentIntoInternal } from "./comments.js"
@@ -42,7 +42,7 @@ export function apiTicketsImportCreateMany(payload) {
     // because this is an 'import' api, we allow setting createdat
     const globalState = getGlobalStateCopy()
     const response = {tickets: []}
-    for (let ticket of payload.tickets) {
+    for (let [index, ticket] of payload.tickets.entries()) {
         allowInlineNewUser(globalState, ticket, 'requester', 'requester_id')
         allowInlineNewUser(globalState, ticket, 'submitter', 'submitter_id')
         const resultTicket = transformIncomingTicketImportIntoInternal(globalState, ticket)
@@ -59,7 +59,7 @@ export function apiTicketsImportCreateMany(payload) {
         }
 
         insertPersistedTicket(globalState, resultTicket)
-        response.tickets.push({id: resultTicket.id})
+        response.tickets.push({index: index, id: resultTicket.id})
     }
 
     // Because this is 'import create many', not 'standard create many', skip triggers
@@ -72,19 +72,22 @@ export function apiTicketUpdateMany(payload) {
     const globalState = getGlobalStateCopy()
     const response = {tickets: []}
 
-    for (let ticket of payload.tickets) {
+    for (let [index, ticket] of payload.tickets.entries()) {
         const existing = globalState.persistedState.tickets[ticket.id]
         if (!existing) {
             throw new Error(`cannot update, ticket id ${ticket.id} not found`)
         }
 
         const resultTicket = transformIncomingTicketUpdateIntoInternal(existing, ticket)
+        if (ticket.comments) {
+            throw new Error(`you can only set comments when importing`)
+        }
         if (ticket.comment) {
             if (ticket.comment.created_at) {
                 throw new Error(`you can only set created_at when importing`)
             }
 
-            allowInlineNewUser(globalState, comment, 'author', 'author_id')
+            allowInlineNewUser(globalState, ticket.comment, 'author', 'author_id')
             const c = transformIncomingCommentIntoInternal(globalState, ticket.comment, resultTicket.requester_id)
             insertPersistedComment(globalState, c)
             resultTicket.comment_ids.push(c.id)
@@ -92,7 +95,7 @@ export function apiTicketUpdateMany(payload) {
         }
 
         updatePersistedTicket(globalState, resultTicket)
-        response.tickets.push({id: resultTicket.id})
+        response.tickets.push({index: index, id: resultTicket.id})
     }
 
     const newJobId = addJobResultToMemory(globalState, response)
@@ -119,6 +122,7 @@ export function apiTicketsShowMany(payload) {
 
 
 function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
+    existing = {...existing}
     if (existing.status == 'closed') {
         throw new Error('cannot update a closed ticket')
     }
@@ -158,6 +162,7 @@ function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
     
     // ignore safe_update for now, would be good to implement in the future for testing race conditions
     existing.updated_at = getCurrentTimestamp()
+    return existing
 }
 
  // Ticket.CreateModel

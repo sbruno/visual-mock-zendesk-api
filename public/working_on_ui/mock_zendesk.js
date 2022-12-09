@@ -1,8 +1,9 @@
 (function () {
   'use strict'
-
   feather.replace()
 })()
+
+const DefaultAdminId = 111
 
 async function onBtnDeleteAllTickets() {
     if (confirm("Clear test data, by deleting tickets?")) {
@@ -17,15 +18,50 @@ async function onBtnDeleteAllTicketsAndUsers() {
 }
 
 async function onBtnPostReply() {
-    alert('looks like ' + inferCurrentTicketId())
+    let txt = prompt('Reply with what text?')
+    if (!txt) {
+        return
+    }
+    let isPublic = prompt('Is this a public message? y/n', 'y')
+    if (!isPublic) {
+        return
+    }
+    isPublic = isPublic && isPublic.toLowerCase() === 'y'
+    const payload = {
+        tickets: [{
+            id: inferCurrentTicketId(),
+            comment: {
+                author_id: DefaultAdminId,
+                body: txt,
+                public: isPublic
+            }
+        }]
+    }
+    await callApi('http://localhost:8999/api/v2/tickets/upda99', 'post', {})
 }
 
 async function onBtnSetStatus(newStatus) {
-   
+    const payload = {
+        tickets: [{
+            id: inferCurrentTicketId(),
+            status: newStatus
+        }]
+    }
+    await callApi('http://localhost:8999/api/v2/tickets/update_many.json', 'post', payload)
 }
 
-async function onBtnSetTags(newStatus) {
-   
+async function onBtnSetTags() {
+    let txt = prompt('Enter tags, separated by ;', 'tag1;tag2;tag3')
+    if (!txt) {
+        return
+    }
+    const payload = {
+        tickets: [{
+            id: inferCurrentTicketId(),
+            tags: txt.split(';')
+        }]
+    }
+    await callApi('http://localhost:8999/api/v2/tickets/update_many.json', 'post', payload)
 }
 
 function inferCurrentTicketId() {
@@ -48,6 +84,7 @@ async function callApi(endpoint, method='post', payload=undefined) {
         method: method,
         headers: {
             "Content-Type": "application/json",
+            'Accept': 'application/json, text/plain, */*',
         },
         body: JSON.stringify(payload || {})      
     }

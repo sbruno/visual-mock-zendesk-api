@@ -1,4 +1,5 @@
 import assert from "assert";
+import { getGlobalState } from "../persist.js";
 import { generateCommentId, getCurrentTimestamp } from "./helpers.js";
 import { validateInternalUser } from "./schema.js";
 
@@ -18,8 +19,6 @@ export function apiGetTicketComments(ticketId) {
     }
     return { comments:results, otherPagesRemain:false, next_page:undefined}
 }
-
-
 
 
 export function transformIncomingCommentIntoInternal(globalState, obj, ticketRequester) {

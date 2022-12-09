@@ -6,6 +6,7 @@ import express from 'express';
 import http from 'http';
 import nunjucks from 'nunjucks';
 import path from 'path';
+import cors from 'cors';
 import sassMiddleware from 'node-sass-middleware';
 import { onLoad } from './persist.js';
 import { webRoutes } from './web/webroutes.js';
@@ -33,8 +34,9 @@ app.use(sassMiddleware({
 
 app.use(express.static(path.join(rootdir, 'public')))
 
-//~ app.use(express.urlencoded())
-app.use(express.json()) // needed to get post.body
+app.use(express.urlencoded()) // needed for frontend to communicate
+//~ app.use(express.json()) // needed to get post.body
+app.use(cors());
 
 onLoad() // call before defining routes
 

@@ -4,10 +4,9 @@ import yup from 'yup';
 import lodash from 'lodash'
 
 import { getCurrentTimestamp } from "./helpers.js";
-import { supportedStatuses } from './status.js';
 import { getDefaultAdminId } from "../persist.js";
 
-// status = "new" | "open" | "pending" | "hold" | "solved" | "closed"
+export const Statuses = ["new" , "open" , "pending" , "hold" , "solved" , "closed"]
 
 function checkIsoDateOrThrow(s) {
     if (!s) {
@@ -89,7 +88,7 @@ export function validateInternalTicket(obj) {
     doValidateForInternal(schema, obj) 
     checkIsoDateOrThrow(obj.created_at)
     checkIsoDateOrThrow(obj.updated_at)
-    if (!supportedStatuses[obj.status]) {
+    if (!Statuses.includes(obj.status)) {
         throw new Error(`unsupported status ${obj.status}`)
     }
 

@@ -1,7 +1,7 @@
 import { getGlobalState, getGlobalStateCopy, onLoad, resetPersistedState, saveGlobalState } from "../persist.js"
 import { apiGetTicketComments } from "./comments.js"
 import { apiGetJobById } from "./jobresults.js"
-import { apiTicketsImportCreateMany, apiTicketsShowMany } from "./tickets.js"
+import { apiTicketsImportCreateMany, apiTicketsShowMany, apiTicketUpdateMany } from "./tickets.js"
 import { apiUsersSearchByEmail, apiUsersCreateMany,  } from "./users.js"
 
 /*
@@ -11,13 +11,17 @@ import { apiUsersSearchByEmail, apiUsersCreateMany,  } from "./users.js"
             curl 'localhost:8999/api/v2/users/search?query=email:df'
         uri: `/api/v2/users/show_many?ids=${ids.join(',')}` // CURLS
             curl 'localhost:8999/api/v2/users/show_many?ids=65565,990140'
-        uri: '/api/v2/imports/tickets/create_many' 
+        uri: '/api/v2/imports/tickets/create_many' // CURLS
             see json in the ./test directory
             curl -d '@./test/curl_import.json' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/imports/tickets/create_many'
-
         uri: '/api/v2/tickets/update_many.json'
-        uri: `/api/v2/tickets/show_many?ids=${ticketIds.join(',')}`
-        uri: `/api/v2/tickets/${ticketId}/comments`
+            see json in the ./test directory
+            curl -d '@./test/curl_update.json' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/imports/tickets/update_many'
+        uri: `/api/v2/tickets/show_many`  // CURLS
+            curl 'localhost:8999/api/v2/tickets/show_many?ids=187661'
+        uri: `/api/v2/tickets/:id/comments`
+            curl 'localhost:8999/api/v2/tickets/63849/comments'
+        
         uri: `/api/v2/uploads?filename=${encodeURIComponent(filename)}`
         `/api/v2/search.json?query=type:ticket`
         job_statuses
@@ -78,7 +82,7 @@ export function apiRoutes(app) {
       })
     app.post('/api/v2/imports/tickets/update_many', (req, res) => {
         wrapHandler(()=> {
-            const result = apiTicketsImportUpdateMany(req.body)
+            const result = apiTicketUpdateMany(req.body)
             res.send(result)
         }, req, res)
       })
