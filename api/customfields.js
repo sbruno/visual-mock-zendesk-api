@@ -1,5 +1,5 @@
 
 
-function renderCustomFields(ticket) {
+export function renderCustomFields(ticket) {
     return ''
 }

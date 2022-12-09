@@ -28,7 +28,8 @@ export function createComment(globalState, createdAt, author_id, body, is_public
         plain_body: body,
         public: is_public,
         author_id: author_id,
-        attachment_ids: [] // would be possible to add, but haven't added it yet.
+        attachment_ids: [], // would be possible to add, but haven't added it yet.
+        type: "Comment" // as opposed to "VoiceComment"
     }
 
     assert(globalState.persistedState.users[author_id], 'author id not found:' + author_id)
@@ -41,3 +42,6 @@ export function addCommentOnTicket(globalState, ticket, obj) {
     globalState.persistedState.comments[obj.id] = obj
     ticket.comment_ids.push(obj.id)
 }
+
+
+

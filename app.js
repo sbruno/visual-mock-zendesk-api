@@ -8,7 +8,7 @@ import nunjucks from 'nunjucks';
 import path from 'path';
 import sassMiddleware from 'node-sass-middleware';
 import { onLoad } from './persist.js';
-import { webRoutes } from './webroutes.js';
+import { webRoutes } from './web/webroutes.js';
 import { apiRoutes } from './api/apiroutes.js';
 import { portNumber } from './api/helpers.js';
 

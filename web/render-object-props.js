@@ -34,9 +34,12 @@ export function renderDate(s) {
 export function renderTicketComments(tId) {
     const globalState = getGlobalState()
     const t = globalState.persistedState.tickets[tId]
-    return { 
+    const result = { 
         comments: t.comment_ids.map(cId => renderTicketComment(cId))
     }
+
+    result.comments = lodash.sortBy(result.comments, c=>new Date(c.created_at)?.valueOf())
+    return result
 }
 
 export function renderTicketComment(cId) {

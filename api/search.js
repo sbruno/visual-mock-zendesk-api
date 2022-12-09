@@ -1,5 +1,5 @@
 import { errNotImplemented } from "./apiroutes"
-
+import lodash from 'lodash'
 
 class BaseFilter {
     includeThese = []
@@ -72,7 +72,7 @@ export function apiSearch(query, sortBy, sortOrder) {
             if (part === 'updated>2021-11-02') {
                 continue
             } else {
-                throw errNotImplemented('only supported clause is updated>')
+                throw errNotImplemented('only supported clause is updated>2021-11-02')
             }
         } else if (part.startsWith('status:')) {
             const s = part.slice('status:'.length)
@@ -94,7 +94,19 @@ export function apiSearch(query, sortBy, sortOrder) {
             filterCustomField.excludeThese.push(s)
         } 
     }
+
+    let results = Object.values(globalState.persistedState.tickets)
+    results = results.filter(filterStatus.getFilter())
+    results = results.filter(filterTag.getFilter())
+    results = results.filter(filterCustomField.getFilter())
+
+    results = lodash.sortBy(sortBy, results)
+    if (sortOrder == 'desc') {
+        results.reverse()
+    }
+
+    return {
+        results: results
+    }
 }
 
-
-//~ 2021-11-02

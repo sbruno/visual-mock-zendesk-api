@@ -5,7 +5,7 @@ import { addJobResultToMemory, getCurrentTimestamp,  generateUserId } from "./he
 import { renderPendingJob } from "./jobresults.js";
 import { validateInternalUser } from "./schema.js";
 
-export function usersShowMany(payload) {
+export function apiUsersShowMany(payload) {
     const globalState = getGlobalState()
     const ids = payload.split(',')
     const result = []
@@ -22,28 +22,34 @@ export function usersShowMany(payload) {
     return {users: result}
 }
 
-export function usersCreateMany(payload) {
+export function apiUsersCreateMany(payload) {
     const globalState = getGlobalStateCopy()
     payload = payload['users']
     const result = []
     for (const [index, userInfo] of payload.entries()) {
         userInfo = validateIncomingUserParams(userInfo)
         emailCannotExistTwice(globalState, userInfo.email) 
-        const newId = generateUserId(globalState.persistedState)
-        const newUser = validateInternalUser({
-            id: newId,
-            name: userInfo.name,
-            email: userInfo.email,
-            created_at: getCurrentTimestamp(),
-        })
 
-        globalState.persistedState.users[newId] = newUser
+        newId = createUser(userInfo.name, userInfo.email)
         result.push({index: index, id: newId})
     }
 
     const newJobId = addJobResultToMemory(globalState, result)
     saveGlobalState(globalState)
     return renderPendingJob(newJobId)
+}
+
+export function createUser(globalState, name, email) {
+    const newId = generateUserId(globalState.persistedState)
+    const newUser = validateInternalUser({
+        id: newId,
+        name,
+        email,
+        created_at: getCurrentTimestamp(),
+    })
+    globalState.persistedState.users[newId] = newUser
+
+    return newId
 }
 
 function emailCannotExistTwice(globalState, email) {
@@ -57,7 +63,7 @@ function emailCannotExistTwice(globalState, email) {
 }
 
 // /api/v2/users/search?query=email:encodeURIComponent(email)
-export function searchByEmail(email) {
+export function apiUsersSearchByEmail(email) {
     const globalState = getGlobalState()
     const allUsers = globalState.persistedState.users
     let results = []

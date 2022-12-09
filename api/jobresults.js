@@ -4,7 +4,7 @@ import assert from "assert";
 import { getGlobalState } from "../persist.js";
 import { getCurrentTimestamp, portNumber } from "./helpers.js";
 
-export function getJobById(jobId) {
+export function apiGetJobById(jobId) {
     const globalState = getGlobalState()
     const result = globalState?.['jobresults']?.[jobId]
     if (!result) {

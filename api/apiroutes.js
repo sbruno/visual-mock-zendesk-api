@@ -1,19 +1,22 @@
 import { getGlobalState, onLoad, resetPersistedState } from "../persist.js"
-import { getTicketComments } from "./comments.js"
-import { getJobById } from "./jobresults.js"
-import { importCreateMany } from "./tickets.js"
-import { searchByEmail, usersCreateMany, usersShowMany } from "./users.js"
+import { apiGetTicketComments } from "./comments.js"
+import { apiGetJobById } from "./jobresults.js"
+import { apiTicketsImportCreateMany, apiShowManyTickets } from "./tickets.js"
+import { apiUsersSearchByEmail, apiUsersCreateMany,  } from "./users.js"
 
 /*
         uri: '/api/v2/users/create_many', // CURLS
-        uri: `/api/v2/users/search?query=email:"${encodeURIComponent(zendeskEmail)}"`
+            curl '/api/v2/users/create_many'
+        uri: `/api/v2/users/search?query=email:"${encodeURIComponent(zendeskEmail)}"` // CURLS
+            curl 'localhost:8999/api/v2/users/search?query=email:df'
         uri: `/api/v2/users/show_many?ids=${ids.join(',')}` // CURLS
-        uri: '/api/v2/imports/tickets/create_many' ,
-        uri: '/api/v2/tickets/update_many.json',
+            curl 'localhost:8999/api/v2/users/show_many?ids=65565,990140'
+        uri: '/api/v2/imports/tickets/create_many' 
+        uri: '/api/v2/tickets/update_many.json'
         uri: `/api/v2/tickets/show_many?ids=${ticketIds.join(',')}`
-        uri: `/api/v2/tickets/${ticketId}/comments`,
-        uri: `/api/v2/uploads?filename=${encodeURIComponent(filename)}`,
-        `/api/v2/search.json?query=type:ticket`;
+        uri: `/api/v2/tickets/${ticketId}/comments`
+        uri: `/api/v2/uploads?filename=${encodeURIComponent(filename)}`
+        `/api/v2/search.json?query=type:ticket`
         job_statuses
 
 */
@@ -33,13 +36,13 @@ export function apiRoutes(app) {
                 throw errNotImplemented('only currently support querying by email')
             }
         
-            const result = searchByEmail(queryEmail)
+            const result = apiUsersSearchByEmail(queryEmail)
             res.send(result)
         }, req, res)
       })
     app.post('/api/v2/users/create_many', (req, res) => {
         wrapHandler(()=> {
-            const result = usersCreateMany(req.body)
+            const result = apiUsersCreateMany(req.body)
             res.send(result)
         }, req, res)
       })
@@ -48,13 +51,28 @@ export function apiRoutes(app) {
             if (!req.query.ids) {
                 throw errNotImplemented('no ids given')
             }
-            const result = usersShowMany(req.query.ids)
+            const result = apiUsersShowMany(req.query.ids)
+            res.send(result)
+        }, req, res)
+      })
+    app.get('/api/v2/users/show_many', (req, res) => {
+        wrapHandler(()=> {
+            if (!req.query.ids) {
+                throw errNotImplemented('no ids given')
+            }
+            const result = apiShowManyTickets(req.query.ids)
             res.send(result)
         }, req, res)
       })
     app.post('/api/v2/imports/tickets/create_many', (req, res) => {
         wrapHandler(()=> {
-            const result = importCreateMany(req.body)
+            const result = apiTicketsImportCreateMany(req.body)
+            res.send(result)
+        }, req, res)
+      })
+    app.post('/api/v2/imports/tickets/update_many', (req, res) => {
+        wrapHandler(()=> {
+            const result = apiTicketsImportUpdateMany(req.body)
             res.send(result)
         }, req, res)
       })
@@ -64,7 +82,7 @@ export function apiRoutes(app) {
                 throw errNotImplemented('no ticketid given')
             }
             const ticketId = parseInt(req.params.id)
-            const result = getTicketComments(ticketId)
+            const result = apiGetTicketComments(ticketId)
             res.send(result)
         }, req, res)
       })
@@ -74,7 +92,7 @@ export function apiRoutes(app) {
                 throw errNotImplemented('no jobid given')
             }
             const jobid = req.params.id.replace('.json', '')
-            const result = getJobById(jobid)
+            const result = apiGetJobById(jobid)
             res.send(result)
         }, req, res)
       })
@@ -85,7 +103,7 @@ export function apiRoutes(app) {
                 throw errNotImplemented('no jobid given')
             }
             const jobid = req.params.id.replace('.json', '')
-            const result = getJobById(jobid)
+            const result = apiGetJobById(jobid)
             res.send(result)
         }, req, res)
       })

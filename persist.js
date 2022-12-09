@@ -15,8 +15,7 @@ export function onLoad() {
         const contentConfigs = fs.readFileSync('./configs.json', {encoding:'utf-8'})
         globalState['globalConfigs'] = JSON.parse(contentConfigs)
     } else {
-        console.log('Note, continuing without configs.json.')
-        globalState['globalConfigs'] = { overrideJobStatusUrlPrefix: "" }
+       throw new Error('No configs.json was found. Create one with the contents {} if needed.')
     }
     
     const contents = fs.readFileSync('./persistedGlobalState.json', {encoding:'utf-8'})
