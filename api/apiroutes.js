@@ -14,21 +14,14 @@ import { apiUsersSearchByEmail, apiUsersCreateMany,  } from "./users.js"
         uri: '/api/v2/imports/tickets/create_many' // CURLS
             see json in the ./test directory
             curl -d '@./test/curl_import.json' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/imports/tickets/create_many'
-        uri: '/api/v2/tickets/update_many.json'
+        uri: '/api/v2/tickets/update_many.json' // CURLS
             see json in the ./test directory
-            curl -d '@./test/curl_update.json' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/imports/tickets/update_many'
+            curl -d '@./test/curl_update.json' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/tickets/update_many.json'
         uri: `/api/v2/tickets/show_many`  // CURLS
             curl 'localhost:8999/api/v2/tickets/show_many?ids=187661'
-        uri: `/api/v2/tickets/:id/comments`
+        uri: `/api/v2/tickets/:id/comments`  // CURLS
             curl 'localhost:8999/api/v2/tickets/63849/comments'
-        
-        uri: `/api/v2/uploads?filename=${encodeURIComponent(filename)}`
-        `/api/v2/search.json?query=type:ticket`
-        job_statuses
-
 */
-
-
 
 export function apiRoutes(app) {
       const globalState = getGlobalState()
@@ -56,6 +49,12 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
+        app.post('/api/v2/users/create_many.json', (req, res) => {
+            wrapHandler(()=> {
+                const result = apiUsersCreateMany(req.body)
+                res.send(result)
+            }, req, res)
+        })
     app.get('/api/v2/users/show_many', (req, res) => {
         wrapHandler(()=> {
             if (!req.query.ids) {
@@ -65,6 +64,15 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
+        app.get('/api/v2/users/show_many.json', (req, res) => {
+            wrapHandler(()=> {
+                if (!req.query.ids) {
+                    throw errNotImplemented('no ids given')
+                }
+                const result = apiUsersShowMany(req.query.ids)
+                res.send(result)
+            }, req, res)
+        })
     app.get('/api/v2/tickets/show_many', (req, res) => {
         wrapHandler(()=> {
             if (!req.query.ids) {
@@ -73,19 +81,40 @@ export function apiRoutes(app) {
             const result = apiTicketsShowMany(req.query.ids)
             res.send(result)
         }, req, res)
-      })
+    })
+        app.get('/api/v2/tickets/show_many.json', (req, res) => {
+            wrapHandler(()=> {
+                if (!req.query.ids) {
+                    throw errNotImplemented('no ids given')
+                }
+                const result = apiTicketsShowMany(req.query.ids)
+                res.send(result)
+            }, req, res)
+        })
     app.post('/api/v2/imports/tickets/create_many', (req, res) => {
         wrapHandler(()=> {
             const result = apiTicketsImportCreateMany(req.body)
             res.send(result)
         }, req, res)
       })
-    app.post('/api/v2/imports/tickets/update_many', (req, res) => {
+        app.post('/api/v2/imports/tickets/create_many.json', (req, res) => {
+            wrapHandler(()=> {
+                const result = apiTicketsImportCreateMany(req.body)
+                res.send(result)
+            }, req, res)
+        })
+    app.post('/api/v2/tickets/update_many', (req, res) => {
         wrapHandler(()=> {
             const result = apiTicketUpdateMany(req.body)
             res.send(result)
         }, req, res)
       })
+        app.post('/api/v2/tickets/update_many.json', (req, res) => {
+            wrapHandler(()=> {
+                const result = apiTicketUpdateMany(req.body)
+                res.send(result)
+            }, req, res)
+        })
     app.get('/api/v2/tickets/:id/comments', (req, res) => {
         wrapHandler(()=> {
             if (!req.params.id || !parseInt(req.params.id)) {
@@ -106,6 +135,16 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
+        app.get('/api/v2/job_statuses/:id.json', (req, res) => {
+            wrapHandler(()=> {
+                if (!req.params.id) {
+                    throw errNotImplemented('no jobid given')
+                }
+                const jobid = req.params.id.replace('.json', '')
+                const result = apiGetJobById(jobid)
+                res.send(result)
+            }, req, res)
+        })
       app.get(`${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/:id`, (req, res) => {
         wrapHandler(()=> {
             if (!req.params.id) {
@@ -116,6 +155,16 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
+        app.get(`${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/:id.json`, (req, res) => {
+            wrapHandler(()=> {
+                if (!req.params.id) {
+                    throw errNotImplemented('no jobid given')
+                }
+                const jobid = req.params.id.replace('.json', '')
+                const result = apiGetJobById(jobid)
+                res.send(result)
+            }, req, res)
+        })
       app.post('/api/delete_all_tickets', (req, res) => {
         wrapHandler(()=> {
             const globalState = getGlobalStateCopy()

@@ -1,16 +1,16 @@
 {
     "tickets": [
       {
-        "id": 187661,
+        "id": 620607,
         "status": "pending",
         "comment": 
         {
             "body": "add another",
             "public": true,
             "author_id": 111
-        }
+        },
+        "custom_fields" : [{"id":123, "value":"addthis"}, {"id":345, "value":"changethis"}]
       }
     ]
   }
-  
   

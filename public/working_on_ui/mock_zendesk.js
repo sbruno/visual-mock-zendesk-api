@@ -37,7 +37,7 @@ async function onBtnPostReply() {
             }
         }]
     }
-    await callApi('http://localhost:8999/api/v2/tickets/upda99', 'post', {})
+    await callApi('/api/v2/tickets/update_many.json', 'post', payload)
 }
 
 async function onBtnSetStatus(newStatus) {
@@ -47,7 +47,7 @@ async function onBtnSetStatus(newStatus) {
             status: newStatus
         }]
     }
-    await callApi('http://localhost:8999/api/v2/tickets/update_many.json', 'post', payload)
+    await callApi('/api/v2/tickets/update_many.json', 'post', payload)
 }
 
 async function onBtnSetTags() {
@@ -61,7 +61,7 @@ async function onBtnSetTags() {
             tags: txt.split(';')
         }]
     }
-    await callApi('http://localhost:8999/api/v2/tickets/update_many.json', 'post', payload)
+    await callApi('/api/v2/tickets/update_many.json', 'post', payload)
 }
 
 function inferCurrentTicketId() {
@@ -79,7 +79,14 @@ function inferCurrentTicketId() {
     return parseInt(pts[1])
 }
 
-async function callApi(endpoint, method='post', payload=undefined) {
+async function callApi(endpoint, method='post', payload=undefined, manual=false) {
+    if (manual) {
+        const obj = JSON.stringify(payload || {})
+        const s = `curl 'localhost:8999${endpoint}' -H "Content-Type: application/json" -X POST -d '${obj}'`
+        prompt('You can run the following:', s)
+        return
+    }
+
     let options = {
         method: method,
         headers: {

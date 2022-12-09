@@ -147,7 +147,7 @@ function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
         existing.tags = existing.tags.filter(t=>!incomingUpdate.remove_tags.includes(t))
     }
     if (incomingUpdate.tags) {
-        existing.status = incomingUpdate.tags
+        existing.tags = incomingUpdate.tags
     }
     if (incomingUpdate.external_id||incomingUpdate.problem_id||incomingUpdate.due_at||
         incomingUpdate.updated_stamp||incomingUpdate.sharing_agreement_ids||incomingUpdate.macro_ids ||
@@ -177,6 +177,7 @@ function transformIncomingTicketImportIntoInternal(globalState, obj) {
     if (obj.fields) {
         throw new Error("cannot set fields, not yet implemented")
     }
+    console.log('custom_fields====', JSON.stringify(obj.custom_fields))
     return {
         id: generateTicketId(globalState.persistedState),
         created_at: obj.created_at || getCurrentTimestamp(),
