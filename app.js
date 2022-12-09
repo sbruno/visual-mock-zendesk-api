@@ -15,6 +15,10 @@ import { portNumber } from './api/helpers.js';
 let app = express()
 const rootdir = '.'
 
+// if using nodemon, remember to specify only to watch .js changes
+// by default it watches .json changes, rebooting the server on every save,
+// which wipes out in-memory state like jobs.
+
 nunjucks.configure('views', {
   autoescape: true,
   express: app

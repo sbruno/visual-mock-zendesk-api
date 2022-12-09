@@ -1,17 +1,20 @@
 import { getGlobalState, onLoad, resetPersistedState } from "../persist.js"
 import { apiGetTicketComments } from "./comments.js"
 import { apiGetJobById } from "./jobresults.js"
-import { apiTicketsImportCreateMany, apiShowManyTickets } from "./tickets.js"
+import { apiTicketsImportCreateMany, apiTicketsShowMany } from "./tickets.js"
 import { apiUsersSearchByEmail, apiUsersCreateMany,  } from "./users.js"
 
 /*
         uri: '/api/v2/users/create_many', // CURLS
-            curl '/api/v2/users/create_many'
+            curl -d '{"users":[{"name":"u1", "email":"a@b.com"}]}' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/users/create_many'
         uri: `/api/v2/users/search?query=email:"${encodeURIComponent(zendeskEmail)}"` // CURLS
             curl 'localhost:8999/api/v2/users/search?query=email:df'
         uri: `/api/v2/users/show_many?ids=${ids.join(',')}` // CURLS
             curl 'localhost:8999/api/v2/users/show_many?ids=65565,990140'
         uri: '/api/v2/imports/tickets/create_many' 
+            see json in the ./test directory
+            curl -d '@./test/curl_import.json' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/imports/tickets/create_many'
+
         uri: '/api/v2/tickets/update_many.json'
         uri: `/api/v2/tickets/show_many?ids=${ticketIds.join(',')}`
         uri: `/api/v2/tickets/${ticketId}/comments`
@@ -21,8 +24,11 @@ import { apiUsersSearchByEmail, apiUsersCreateMany,  } from "./users.js"
 
 */
 
+
+
 export function apiRoutes(app) {
-    app.get('/api/v2/users/search', (req, res) => {
+      const globalState = getGlobalState()
+      app.get('/api/v2/users/search', (req, res) => {
         wrapHandler(()=> {
             const query = req.query.query
             if (!query) {
@@ -55,12 +61,12 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
-    app.get('/api/v2/users/show_many', (req, res) => {
+    app.get('/api/v2/tickets/show_many', (req, res) => {
         wrapHandler(()=> {
             if (!req.query.ids) {
                 throw errNotImplemented('no ids given')
             }
-            const result = apiShowManyTickets(req.query.ids)
+            const result = apiTicketsShowMany(req.query.ids)
             res.send(result)
         }, req, res)
       })
@@ -86,7 +92,7 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
-        app.get('/api/v2/job_statuses/:id', (req, res) => {
+      app.get('/api/v2/job_statuses/:id', (req, res) => {
         wrapHandler(()=> {
             if (!req.params.id) {
                 throw errNotImplemented('no jobid given')
@@ -96,7 +102,6 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
-      const globalState = getGlobalState()
       app.get(`${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/:id`, (req, res) => {
         wrapHandler(()=> {
             if (!req.params.id) {

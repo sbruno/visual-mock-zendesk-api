@@ -7,26 +7,26 @@ import { getCurrentTimestamp } from "./helpers.js";
 import { supportedStatuses } from './status.js';
 import { getDefaultAdminId } from "../persist.js";
 
+// status = "new" | "open" | "pending" | "hold" | "solved" | "closed"
 
-function transformIncomingUserIntoInternal(obj) {
-    assert(!obj.id, `new user - cannot specify id`)
-    return {
-        name: obj.name,
-        email: obj.email,
-        created_at: getCurrentTimestamp()
+function checkIsoDateOrThrow(s) {
+    if (!s) {
+        throw new Error('not an iso date ' + s)
+    } else if (!s.includes('T')) {
+        throw new Error('does not contain a T, might not be an iso date' + s)
+    }
+
+    try {
+        const d = new Date(s)
+    } catch(e) {
+        throw new Error('failed to parse iso date ' + s + e)
     }
 }
-/*
-    export function validateIncomingUserParams(obj) {
-    assert(!obj.id, `new user - cannot specify id`)
-    let schema = yup.object({
-        name: yup.string().required(),
-        email: yup.string().required(),
-      }).noUnknown(true).required();
-      doValidateForInternal(schema, obj) 
-      return obj
-}*/
 
+// These functions ensure that the data we persist to storage has exactly the correct shape.
+// We can also rely on them to cause a thrown error if there's missing/malformed user input.
+
+// User.ResponseModel
 export function validateInternalUser(obj) {
     let schema = yup.object({
         id: yup.number().required().positive().integer(),
@@ -39,24 +39,8 @@ export function validateInternalUser(obj) {
       return obj
 }
 
-function checkIsoDateOrThrow(s) {
-    if (!s) {
-        throw new Error('not an iso date '+s)
-    }else if (!s.includes('T')) {
-        throw new Error('does not contain a T, might not be an iso date'+s)
-    }
-    try {
-        const d = new Date(s)
-    } catch(e) {
-        throw new Error('failed to parse iso date ' + s + e)
-    }
-}
-
-// Status = "new" | "open" | "pending" | "hold" | "solved" | "closed"
-
-
-
-export function validateInternalTicket(obj) { // ResponseModel
+// Ticket.ResponseModel
+export function validateInternalTicket(obj) {
     // if you pass a number it will be cast to a string unless you mark the field as strict()
     let schema = yup.object({
         id: yup.number().required().positive().integer(),
@@ -108,35 +92,11 @@ export function validateInternalTicket(obj) { // ResponseModel
     if (!supportedStatuses[obj.status]) {
         throw new Error(`unsupported status ${obj.status}`)
     }
+
     return obj
 }
 
-
-//~ export function validateIncomingTicketParams(obj) {
-    //~ if (obj?.comments?.any(comment=>comment.attachment_ids?.length)) {
-        //~ throw new Error("We don't yet support attachments")
-    //~ }
-    //~ let schemaComment = yup.object({
-        //~ created_at: yup.string().optional(),
-        //~ body: yup.string().required(),
-        //~ public: yup.bool().optional(),
-        //~ author_id: yup.number().optional(),
-    //~ }).noUnknown(true)
-    
-    //~ assert(!obj.id, `new ticket - cannot specify id`)
-    //~ let schema = yup.object({
-        //~ created_at: yup.string().optional(),
-        //~ subject: yup.string().optional(),
-        //~ status: yup.string().optional(),
-        //~ requester_id: yup.string().required(),
-        //~ submitter_id: yup.string().optional(),
-        //~ submitter_id: yup.string().optional(),
-
-    //~ })
-
-//~ }
-
-
+// Comment.ResponseModel
 export function validateInternalComment(obj) {
     let schema = yup.object({
         id: yup.number().required().positive().integer(),
@@ -160,6 +120,41 @@ export function validateInternalComment(obj) {
     return obj
 }
 
+export function insertPersistedUser(globalState, obj) {
+    validateInternalUser(obj)
+    emailCannotExistTwice(globalState, obj.email)
+    assert(!globalState.persistedState.users[obj.id], 'user w same id already exists')
+    globalState.persistedState.users[obj.id] = obj
+}
+
+export function insertPersistedComment(globalState, obj) {
+    validateInternalComment(obj)
+    assert(!globalState.persistedState.comments[obj.id], 'comment w same id already exists')
+    globalState.persistedState.comments[obj.id] = obj
+}
+
+export function insertPersistedTicket(globalState, obj) {
+    validateInternalTicket(obj)
+    assert(!globalState.persistedState.tickets[obj.id], 'ticket w same id already exists')
+    globalState.persistedState.tickets[obj.id] = obj
+}
+
+export function updatePersistedTicket(globalState, obj) {
+    validateInternalTicket(obj)
+    assert(globalState.persistedState.tickets[obj.id], 'ticket w same id not exists')
+    globalState.persistedState.tickets[obj.id] = obj
+}
+
+function emailCannotExistTwice(globalState, email) {
+    const allUsers = globalState.persistedState.users
+    for (let userId in allUsers) {
+        const user = allUsers[userId]
+        if (user.email === email) {
+            assert(false, 'user with this email already exists ' + email)
+        }
+    }
+}
+
 function doValidateForInternal(schema, obj) {
     // stripUnknown: throws if any required are not there
     // strict: do not 'parse', important because internally we want to enforce the int/str distinction,
@@ -167,3 +162,4 @@ function doValidateForInternal(schema, obj) {
     // but when persisting in db, always store int ids and we need strict:true to actually enforce that. 
     schema.validate(obj, {stripUnknown: false, strict:true}) 
 }
+

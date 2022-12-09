@@ -1,12 +1,18 @@
-import { getCurrentTimestamp } from "./helpers.js"
-import { validateInternalTicket } from "./schema.js"
+import { generateTicketId, getCurrentTimestamp } from "./helpers.js"
+import { insertPersistedComment, insertPersistedTicket, insertPersistedUser, updatePersistedTicket, validateInternalTicket } from "./schema.js"
+import assert from "assert";
 import lodash from 'lodash'
-import { saveGlobalState } from "../persist.js"
+import { getDefaultAdminId, getGlobalStateCopy, saveGlobalState } from "../persist.js"
 import { renderPendingJob } from "./jobresults.js"
-import { apiUsersSearchByEmail, createUser } from "./users.js"
+import {  transformIncomingUserIntoInternal, usersSearchByEmailImpl } from "./users.js"
+import { transformIncomingCommentIntoInternal } from "./comments.js"
+import { runTriggersOnNewCommentPosted } from "./triggers.js"
 
 
-
+// It's semi un-documented, but some ticket apis, especially the batch ones,
+// let you create a new user inline, for example instead of providing
+// requester_id: 234, providing requester: { name: 'name', email: 'example@example.com'}
+// this function implements this feature.
 function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
     if (obj[keyToUse]) {
         const em = obj[keyToUse].email
@@ -14,7 +20,8 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
         if (!em || !nm) {
             throw new Error(`attempted inline User but did not pass in an email or name`)
         }
-        const foundByEmail = apiUsersSearchByEmail(em)?.users
+        
+        const foundByEmail = usersSearchByEmailImpl(globalState, em)?.users
         if (foundByEmail) {
             const foundByName = foundByEmail.find(user.name === nm)
             if (foundByName) {
@@ -23,7 +30,8 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
                 throw new Error(`attempted inline User but did name does not match existing user with this email`)
             }
         } else {
-            const newId = createUser(globalState, nm, em)
+            const resultUser = transformIncomingUserIntoInternal(globalState, {name: nm, email:em})
+            insertPersistedUser(globalState, resultUser)
             console.log(`created inline User`)
             obj[keyId] = newId
         }
@@ -33,82 +41,66 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
 export function apiTicketsImportCreateMany(payload) {
     // because this is an 'import' api, we allow setting createdat
     const globalState = getGlobalStateCopy()
+    const response = {tickets: []}
     for (let ticket of payload.tickets) {
         allowInlineNewUser(globalState, ticket, 'requester', 'requester_id')
         allowInlineNewUser(globalState, ticket, 'submitter', 'submitter_id')
-        const obj = ticketCreate(globalState, ticket.subject, ticket.status, ticket.custom_fields, ticket.is_public, ticket.requester_id, ticket.submitter_id, ticket.tags, ticket.created_at)
-        if (ticket.comments) {
-            for (let comment of ticket.comments) {
-                allowInlineNewUser(globalState, comment, 'author', 'author_id')
-                const c = commentCreate()
-
-            }
+        const resultTicket = transformIncomingTicketImportIntoInternal(globalState, ticket)
+        resultTicket.comment_ids = []
+        if (ticket.comment) {
+            throw new Error(`during import we only support setting comments, not comment`)
         }
+        for (let comment of (ticket.comments||[])) {
+            allowInlineNewUser(globalState, comment, 'author', 'author_id')
+            const c = transformIncomingCommentIntoInternal(globalState, comment, resultTicket.requester_id)
+            insertPersistedComment(globalState, c)
+            resultTicket.comment_ids.push(c.id)
+            // Because this is 'import create many', not 'standard create many', skip triggers
+        }
+
+        insertPersistedTicket(globalState, resultTicket)
+        response.tickets.push({id: resultTicket.id})
     }
 
+    // Because this is 'import create many', not 'standard create many', skip triggers
+    const newJobId = addJobResultToMemory(globalState, response)
     saveGlobalState(globalState)
     return renderPendingJob(newJobId)
 }
 
-export function apiTicketUpdate(payload) {
+export function apiTicketUpdateMany(payload) {
     const globalState = getGlobalStateCopy()
+    const response = {tickets: []}
+
+    for (let ticket of payload.tickets) {
+        const existing = globalState.persistedState.tickets[ticket.id]
+        if (!existing) {
+            throw new Error(`cannot update, ticket id ${ticket.id} not found`)
+        }
+
+        const resultTicket = transformIncomingTicketUpdateIntoInternal(existing, ticket)
+        if (ticket.comment) {
+            if (ticket.comment.created_at) {
+                throw new Error(`you can only set created_at when importing`)
+            }
+
+            allowInlineNewUser(globalState, comment, 'author', 'author_id')
+            const c = transformIncomingCommentIntoInternal(globalState, ticket.comment, resultTicket.requester_id)
+            insertPersistedComment(globalState, c)
+            resultTicket.comment_ids.push(c.id)
+            runTriggersOnNewCommentPosted(globalState, resultTicket, c)
+        }
+
+        updatePersistedTicket(globalState, resultTicket)
+        response.tickets.push({id: resultTicket.id})
+    }
+
+    const newJobId = addJobResultToMemory(globalState, response)
     saveGlobalState(globalState)
     return renderPendingJob(newJobId)
 }
 
-export function updateTicket(globalState, id, status, custom_fields, is_public, tags) {
-    const existingTicket = globalState.persistedState.tickets[id]
-    if (!existingTicket) {
-        throw new Error(`no existing ticket with id ${id}`)
-    }
-    ticket.modified_at = getCurrentTimestamp()
-    ticket.status = status || ticket.status
-    applyCustomFields(ticket, custom_fields)
-    ticket.is_public = is_public
-    ticket.tags = [...ticket.tags, ...tags]
-    ticket.tags = lodash.uniq(ticket.tags)
-    validateInternalTicket(ticket)
-    runTriggersOnNewCommentPosted
-}
-
-function applyCustomFields(ticket, custom_fields) {
-    if (!custom_fields || !custom_fields.length) {
-        return
-    }
-    //merge it
-}
-
-export function ticketCreate(globalState, created_at, subject, status, custom_fields, is_public,
-     requester_id, submitter_id, tags) {
-    submitter_id = submitter_id || requester_id
-    
-    const result = {
-        id: generateTicketId(globalState.persistedState),
-        created_at: createdAt || getCurrentTimestamp(),
-        subject: subject,
-        raw_subject: subject,
-        status: status || 'open',
-        requester_id: requester_id,
-        submitter_id: submitter_id,
-        tags: tags || [],
-        is_public: is_public || true,
-        custom_fields: custom_fields || [],
-        fields: [],
-        comment_ids: []
-    }
-
-    assert(globalState.persistedState.users[requester_id], 'requester_id id not found:' + requester_id)
-    assert(globalState.persistedState.users[submitter_id], 'submitter_id id not found:' + submitter_id)
-    result.modified_at = result.created_at
-    return result
-}
-
-export function addTicket(globalState, obj) {
-    obj = validateInternalTicket(obj)
-    globalState.persistedState.tickets[obj.id] = obj
-}
-
-export function apiShowManyTickets(payload) {
+export function apiTicketsShowMany(payload) {
     const globalState = getGlobalState()
     const ids = payload.split(',')
     const result = []
@@ -143,7 +135,7 @@ function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
     }
     if (incomingUpdate.additional_tags) { // less documented, but does work on latest api
         assert(Array.isArray(incomingUpdate.additional_tags), 'additional_tags must be an array')
-        existing.tags = [...existing.tags, ...incomingUpdate.additional_tags]
+        existing.tags = [...incomingUpdate.additional_tags, ...existing.tags]
         existing.tags = lodash.uniq(existing.tags)
     }
     if (incomingUpdate.remove_tags) { // less documented, but does work on latest api
@@ -160,29 +152,37 @@ function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
     }
     if (incomingUpdate.custom_fields) {
         // confirmed in zendesk api that this merges in, not replaces
-        existing.custom_fields = {...existing.custom_fields, ...incomingUpdate.custom_fields}
+        existing.custom_fields = [...incomingUpdate.custom_fields, ...existing.custom_fields]
+        existing.custom_fields = lodash.uniqBy(existing.custom_fields, fld=>fld.id)
     }
     
     // ignore safe_update for now, would be good to implement in the future for testing race conditions
     existing.modified_at = getCurrentTimestamp()
 }
 
-function transformIncomingTicketImportIntoInternal(obj) { // CreateModel
+ // Ticket.CreateModel
+function transformIncomingTicketImportIntoInternal(globalState, obj) {
     assert(!obj.id, `new ticket - cannot specify id`)
-    // we've used requester->requesterid
     if (obj.external_id || obj.type ||  obj.priority || obj.recipient 
         || obj.organization_id || obj.group_id || obj.collaborator_ids || obj.collaborators || 
-        obj.follower_ids || obj.email_cc_ids || obj.xxxx || obj.xxxx || obj.xxxx || obj.xxxx ||) {
-        throw new Error("cannot update this property, not yet implemented")
+        obj.follower_ids || obj.email_cc_ids || obj.via_followup_source_id || obj.macro_ids ||
+         obj.ticket_form_id || obj.brand_id) {
+        throw new Error("cannot set this property, not yet implemented")
+    }
+    if (obj.fields) {
+        throw new Error("cannot set fields, not yet implemented")
     }
     return {
+        id: generateTicketId(globalState.persistedState),
+        created_at: obj.created_at || getCurrentTimestamp(),
+        modified_at: obj.modified_at ||obj.created_at || getCurrentTimestamp(),
         subject: (obj.subject || obj.raw_subject || '(no subject given)'),
         raw_subject: (obj.subject || obj.raw_subject || '(no subject given)'),
-        status: (obj.status),
+        status: (obj.status) || 'open',
         requester_id: obj.requester_id,
         submitter_id: obj.submitter_id || obj.requester_id,
         assignee_id: obj.assignee_id || getDefaultAdminId(),
         tags: obj.tags || [],
+        custom_fields: obj.custom_fields || [],
     }
-    
 }
