@@ -1,6 +1,6 @@
 
 import { getGlobalState, onLoad, resetPersistedState } from "../persist.js"
-import { renderTicketProps } from "./render-object-props.js";
+import { renderTicketComment, renderTicketComments, renderTicketProps } from "./render-object-props.js";
 import lodash from 'lodash';
 
 export function webRoutes(app) {
@@ -33,6 +33,7 @@ export function webRoutes(app) {
       res.render('ticketnew.njk', data)
       })
     app.get('/agent/tickets/:id', function(req, res) {
+      const globalState = getGlobalState()
       if (!req.params.id || !parseInt(req.params.id)) {
           throw errNotImplemented('no ticketid given')
       }

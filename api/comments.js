@@ -30,7 +30,7 @@ export function transformIncomingCommentIntoInternal(globalState, obj, ticketReq
     return {
         id: generateCommentId(globalState.persistedState),
         created_at: obj.created_at || getCurrentTimestamp(),
-        modified_at: (obj.modified_at || obj.created_at) || getCurrentTimestamp(),
+        updated_at: (obj.updated_at || obj.created_at) || getCurrentTimestamp(),
         type: "Comment",
         body: obj.body || obj.html_body,
         html_body: obj.body || obj.html_body,

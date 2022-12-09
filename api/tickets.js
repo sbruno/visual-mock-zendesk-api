@@ -1,4 +1,4 @@
-import { generateTicketId, getCurrentTimestamp } from "./helpers.js"
+import { addJobResultToMemory, generateTicketId, getCurrentTimestamp } from "./helpers.js"
 import { insertPersistedComment, insertPersistedTicket, insertPersistedUser, updatePersistedTicket, validateInternalTicket } from "./schema.js"
 import assert from "assert";
 import lodash from 'lodash'
@@ -157,7 +157,7 @@ function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
     }
     
     // ignore safe_update for now, would be good to implement in the future for testing race conditions
-    existing.modified_at = getCurrentTimestamp()
+    existing.updated_at = getCurrentTimestamp()
 }
 
  // Ticket.CreateModel
@@ -175,14 +175,17 @@ function transformIncomingTicketImportIntoInternal(globalState, obj) {
     return {
         id: generateTicketId(globalState.persistedState),
         created_at: obj.created_at || getCurrentTimestamp(),
-        modified_at: obj.modified_at ||obj.created_at || getCurrentTimestamp(),
+        updated_at: obj.updated_at ||obj.created_at || getCurrentTimestamp(),
         subject: (obj.subject || obj.raw_subject || '(no subject given)'),
         raw_subject: (obj.subject || obj.raw_subject || '(no subject given)'),
         status: (obj.status) || 'open',
+        description: obj.description || '(no description given)',
         requester_id: obj.requester_id,
         submitter_id: obj.submitter_id || obj.requester_id,
         assignee_id: obj.assignee_id || getDefaultAdminId(),
         tags: obj.tags || [],
         custom_fields: obj.custom_fields || [],
+        fields: obj.fields || [],
+        is_public: (obj.is_public === undefined) ? true : obj.is_public
     }
 }

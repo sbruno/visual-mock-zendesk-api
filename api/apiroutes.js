@@ -1,4 +1,4 @@
-import { getGlobalState, onLoad, resetPersistedState } from "../persist.js"
+import { getGlobalState, getGlobalStateCopy, onLoad, resetPersistedState, saveGlobalState } from "../persist.js"
 import { apiGetTicketComments } from "./comments.js"
 import { apiGetJobById } from "./jobresults.js"
 import { apiTicketsImportCreateMany, apiTicketsShowMany } from "./tickets.js"
@@ -110,6 +110,15 @@ export function apiRoutes(app) {
             const jobid = req.params.id.replace('.json', '')
             const result = apiGetJobById(jobid)
             res.send(result)
+        }, req, res)
+      })
+      app.post('/api/delete_all_tickets', (req, res) => {
+        wrapHandler(()=> {
+            const globalState = getGlobalStateCopy()
+            globalState.persistedState.tickets = {}
+            globalState.persistedState.comments = {}
+            saveGlobalState(globalState)
+            res.send({})
         }, req, res)
       })
       app.post('/api/delete_all', (req, res) => {

@@ -5,38 +5,44 @@
        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">{{ title }}</h1>
       </div>
-
+      
       <div class="table-responsive">
         <table class="table table-sm">
           <tbody>
-            <tr>
-              <td><a href="#">45</a></td>
-              <td>I'm having problems with my order</td>
-              <td>Sophie W</td>
-              <td>03/04/2022</td>
-              <td>Resolved</td>
-            </tr>
+            {{ renderTicketRow(ticket) }}
           </tbody>
         </table>
       </div>
-      <div class="mt-3">
-        <b>03/04/2022
-        From: Sophie W</b><br/>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+      <div style="margin-top:1em">
+      Ticket created, {{ ticket.created_at_rendered }}<br/>
+      Ticket last updated, {{ ticket.updated_at_rendered }}<br/>
+      Ticket subject, {{ ticket.raw_subject }}<br/>
+      Ticket requester, {{ ticket.requester_rendered }}, email is, {{ ticket.requester_email_rendered }}<br/>
+      Ticket public, {{ ticket.is_public }}<br/>
       </div>
-      <div class="mt-3">
-        <b>03/04/2022
-        From: Mock Zendesk Admin</b><br/>
-        Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.
+      <div style="margin-top:1em">
+      {% for c in (comments.comments) %}
+            <div class="mt-3">
+            <b>{{ c.created_at_rendered }}</b>
+            {% if c.public %}
+            {% else %}
+              <i>(private)</i>
+            {% endif %}
+            <b>From: {{ c.author_email_rendered }}</b>
+            <br/>
+            {{ c.plain_body }}
+          </div>
+      {% endfor %}
       </div>
       <div class="mt-3">
         <form>
-            <textarea></textarea><br/>
-            <input type="checkbox"/> Include mock attachment<br/>
-            <button>Post Reply</button><br/><br/>
-            <button>Mark as Solved</button> <button>Mark as Pending</button>  <button>Mark as Open</button> 
+            <button onclick="onBtnPostReply()">Post Reply</button><br/><br/>
+            <button onclick="onBtnSetStatus('solved')">Mark as Solved</button> 
+            <button onclick="onBtnSetStatus('pending')">Mark as Pending</button>  
+            <button onclick="onBtnSetStatus('open')">Mark as Open</button> 
             <div class="mt-3">
-            <input type="text"/> Tags (separated by |) <button>Set</button>
+            Tags: {{ ticket.tags_rendered }} <button onclick="onBtnSetTags()">Set Tags</button><br/>
+            Custom Fields: {{ ticket.custom_fields_rendered | nl2br }} <br/>
                 
             </div>
         </form>

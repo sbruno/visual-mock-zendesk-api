@@ -14,7 +14,7 @@
             '98778': {
                 id: 1234,
                 created_at: '123',
-                modified_at: '456',
+                updated_at: '456',
                 subject: 'abc',
                 raw_subject: 'abc',
                 status: 'Open',
@@ -33,7 +33,7 @@
             '345345': {
             id: '345345',
             created_at: '123',
-            modified_at: '456',
+            updated_at: '456',
             body: 'ab',
             html_body: 'ab',
             plain_body: 'ab',

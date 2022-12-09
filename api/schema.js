@@ -45,7 +45,7 @@ export function validateInternalTicket(obj) {
     let schema = yup.object({
         id: yup.number().required().positive().integer(),
         created_at: yup.string().required(),
-        modified_at: yup.string().required(),
+        updated_at: yup.string().required(),
         // url: not yet implemented
         // external_id: not yet implemented
         // type: not yet implemented
@@ -88,7 +88,7 @@ export function validateInternalTicket(obj) {
     }).noUnknown(true).required();
     doValidateForInternal(schema, obj) 
     checkIsoDateOrThrow(obj.created_at)
-    checkIsoDateOrThrow(obj.modified_at)
+    checkIsoDateOrThrow(obj.updated_at)
     if (!supportedStatuses[obj.status]) {
         throw new Error(`unsupported status ${obj.status}`)
     }
@@ -101,7 +101,7 @@ export function validateInternalComment(obj) {
     let schema = yup.object({
         id: yup.number().required().positive().integer(),
         created_at: yup.string().required(),
-        modified_at: yup.string().required(),
+        updated_at: yup.string().required(),
         // url: not yet implemented
         type: yup.string().required(), // "Comment" | "VoiceComment"
         // request_id: not yet implemented
@@ -116,7 +116,7 @@ export function validateInternalComment(obj) {
     }).noUnknown(true).required();
     doValidateForInternal(schema, obj) 
     checkIsoDateOrThrow(obj.created_at)
-    checkIsoDateOrThrow(obj.modified_at)
+    checkIsoDateOrThrow(obj.updated_at)
     return obj
 }
 
@@ -160,6 +160,6 @@ function doValidateForInternal(schema, obj) {
     // strict: do not 'parse', important because internally we want to enforce the int/str distinction,
     // for example, when getting data from outside, we'll accept either a string or int for id,
     // but when persisting in db, always store int ids and we need strict:true to actually enforce that. 
-    schema.validate(obj, {stripUnknown: false, strict:true}) 
+    schema.validateSync(obj, {stripUnknown: false, strict:true}) 
 }
 

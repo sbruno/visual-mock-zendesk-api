@@ -15,7 +15,8 @@
             "created_at": "2020-01-03T06:38:32.399Z",
             "body": "c2",
             "public": true,
-            "author_id": 111
+            "author_id": 111,
+            "custom_fields": [{"id":"345", "value":"s1"},{"id":"1900006025624", "value":"s2"}]
           }
         ]
       }
