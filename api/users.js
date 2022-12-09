@@ -30,10 +30,10 @@ export function apiUsersCreateMany(payload) {
         const resultUser = transformIncomingUserIntoInternal(globalState, userInfo)
         const alreadyFound = usersSearchByEmailImpl(globalState, resultUser.email)
         if (alreadyFound && alreadyFound?.results?.length) {
-            response.push({index: index, id: alreadyFound.results[0].id})
+            response.push({"success": true, index: index, id: alreadyFound.results[0].id, "action": "update", "status": "Updated"})
         } else {
             insertPersistedUser(globalState, resultUser)
-            response.push({index: index, id: resultUser.id})
+            response.push({"success": true, index: index, id: resultUser.id, "action": "create", "status": "Created"})
         }
     }
 

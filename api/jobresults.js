@@ -31,6 +31,8 @@ export function renderCompletedJob(jobId, payload) {
             id: jobId,
             url: `http://localhost:${portNumber}${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/${jobId}.json`,
             "status":"completed",
+            total: payload?.length,
+            progress: payload?.length,
             message: `Completed at ${getCurrentTimestamp()}`,
             results: payload
         }

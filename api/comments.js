@@ -20,6 +20,15 @@ export function apiGetTicketComments(ticketId) {
     return { comments:results, otherPagesRemain:false, next_page:undefined}
 }
 
+export function allowShortcutStringComment(obj) {
+    if (typeof obj === 'string') {
+        return {
+            body: obj,
+        }
+    } else {
+        return obj
+    }
+}
 
 export function transformIncomingCommentIntoInternal(globalState, obj, ticketRequester) {
     assert(!obj.id, `new comment - cannot specify id`)

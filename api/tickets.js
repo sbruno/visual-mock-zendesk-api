@@ -5,7 +5,7 @@ import lodash from 'lodash'
 import { getDefaultAdminId, getGlobalState, getGlobalStateCopy, saveGlobalState } from "../persist.js"
 import { renderPendingJob } from "./jobresults.js"
 import {  transformIncomingUserIntoInternal, usersSearchByEmailImpl } from "./users.js"
-import { transformIncomingCommentIntoInternal } from "./comments.js"
+import { allowShortcutStringComment, transformIncomingCommentIntoInternal } from "./comments.js"
 import { runTriggersOnNewCommentPosted } from "./triggers.js"
 import { intCustomFields } from "./customfields.js";
 
@@ -56,6 +56,7 @@ export function apiTicketsImportCreateMany(payload) {
             throw new Error(`during import we only support setting comments, not comment`)
         }
         for (let comment of (ticket.comments||[])) {
+            comment = allowShortcutStringComment(comment)
             allowInlineNewUser(globalState, comment, 'author', 'author_id')
             const c = transformIncomingCommentIntoInternal(globalState, comment, resultTicket.requester_id)
             insertPersistedComment(globalState, c)
@@ -64,7 +65,7 @@ export function apiTicketsImportCreateMany(payload) {
         }
 
         insertPersistedTicket(globalState, resultTicket)
-        response.push({index: index, id: resultTicket.id})
+        response.push({index: index, id: resultTicket.id, account_id: "not yet implemented", "success": true /* extra */})
     }
 
     // Because this is 'import create many', not 'standard create many', skip triggers
@@ -88,6 +89,7 @@ export function apiTicketUpdateMany(payload) {
             throw new Error(`you can only set comments when importing`)
         }
         if (ticket.comment) {
+            ticket.comment = allowShortcutStringComment(ticket.comment)
             if (ticket.comment.created_at) {
                 throw new Error(`you can only set created_at when importing`)
             }
@@ -100,7 +102,7 @@ export function apiTicketUpdateMany(payload) {
         }
 
         updatePersistedTicket(globalState, resultTicket)
-        response.push({index: index, id: resultTicket.id})
+        response.push({index: index, id: resultTicket.id, "action":"update","status":"Updated","success":true})
     }
 
     const newJobId = addJobResultToMemory(globalState, response)
