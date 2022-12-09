@@ -7,6 +7,7 @@ import { renderPendingJob } from "./jobresults.js"
 import {  transformIncomingUserIntoInternal, usersSearchByEmailImpl } from "./users.js"
 import { transformIncomingCommentIntoInternal } from "./comments.js"
 import { runTriggersOnNewCommentPosted } from "./triggers.js"
+import { intCustomFields } from "./customfields.js";
 
 
 // It's semi un-documented, but some ticket apis, especially the batch ones,
@@ -36,12 +37,16 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
             obj[keyId] = newId
         }
     }
+
+    if (obj[keyId]) {
+        obj[keyId] = parseInt(obj[keyId])
+    }
 }
 
 export function apiTicketsImportCreateMany(payload) {
     // because this is an 'import' api, we allow setting createdat
     const globalState = getGlobalStateCopy()
-    const response = {tickets: []}
+    const response = []
     for (let [index, ticket] of payload.tickets.entries()) {
         allowInlineNewUser(globalState, ticket, 'requester', 'requester_id')
         allowInlineNewUser(globalState, ticket, 'submitter', 'submitter_id')
@@ -59,7 +64,7 @@ export function apiTicketsImportCreateMany(payload) {
         }
 
         insertPersistedTicket(globalState, resultTicket)
-        response.tickets.push({index: index, id: resultTicket.id})
+        response.push({index: index, id: resultTicket.id})
     }
 
     // Because this is 'import create many', not 'standard create many', skip triggers
@@ -70,7 +75,7 @@ export function apiTicketsImportCreateMany(payload) {
 
 export function apiTicketUpdateMany(payload) {
     const globalState = getGlobalStateCopy()
-    const response = {tickets: []}
+    const response = []
 
     for (let [index, ticket] of payload.tickets.entries()) {
         const existing = globalState.persistedState.tickets[ticket.id]
@@ -95,7 +100,7 @@ export function apiTicketUpdateMany(payload) {
         }
 
         updatePersistedTicket(globalState, resultTicket)
-        response.tickets.push({index: index, id: resultTicket.id})
+        response.push({index: index, id: resultTicket.id})
     }
 
     const newJobId = addJobResultToMemory(globalState, response)
@@ -154,6 +159,7 @@ function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
         incomingUpdate.attribute_value_ids) {
         throw new Error("cannot update this property, not yet implemented")
     }
+    intCustomFields(incomingUpdate.custom_fields)
     if (incomingUpdate.custom_fields) {
         // confirmed in zendesk api that this merges in, not replaces
         existing.custom_fields = [...incomingUpdate.custom_fields, ...existing.custom_fields]
@@ -177,7 +183,7 @@ function transformIncomingTicketImportIntoInternal(globalState, obj) {
     if (obj.fields) {
         throw new Error("cannot set fields, not yet implemented")
     }
-    console.log('custom_fields====', JSON.stringify(obj.custom_fields))
+    intCustomFields(obj.custom_fields)
     return {
         id: generateTicketId(globalState.persistedState),
         created_at: obj.created_at || getCurrentTimestamp(),

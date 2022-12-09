@@ -1,5 +1,6 @@
-import { errNotImplemented } from "./apiroutes"
+import { errNotImplemented } from "./apiroutes.js"
 import lodash from 'lodash'
+import { getGlobalState } from "../persist.js"
 
 class BaseFilter {
     includeThese = []
@@ -34,7 +35,12 @@ class FilterByTag extends BaseFilter {
         if (this.includeThese.length) {
             throw new Error('not yet supported')
         } else if (this.excludeThese.length) {
-            return (t)=>!t.tags.any(tag => this.excludeThese.includes(tag))
+            return (t)=>{
+                if (!t?.tags?.length) {
+                    return true
+                }
+                return !t.tags.any(tag => this.excludeThese.includes(tag))
+            }
         } else {
             return (t)=>true
         }
@@ -58,6 +64,7 @@ class FilterCustomField extends BaseFilter {
 }
 
 export function apiSearch(query, sortBy, sortOrder) {
+    const globalState = getGlobalState()
     sortBy = sortBy || 'created_at'
     sortOrder = sortOrder || 'asc'
     const queryParts = query.split(' ')
@@ -100,7 +107,7 @@ export function apiSearch(query, sortBy, sortOrder) {
     results = results.filter(filterTag.getFilter())
     results = results.filter(filterCustomField.getFilter())
 
-    results = lodash.sortBy(sortBy, results)
+    results = lodash.sortBy(results, sortBy)
     if (sortOrder == 'desc') {
         results.reverse()
     }

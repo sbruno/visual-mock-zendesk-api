@@ -1,6 +1,7 @@
 import { getGlobalState, getGlobalStateCopy, onLoad, resetPersistedState, saveGlobalState } from "../persist.js"
 import { apiGetTicketComments } from "./comments.js"
 import { apiGetJobById } from "./jobresults.js"
+import { apiSearch } from "./search.js"
 import { apiTicketsImportCreateMany, apiTicketsShowMany, apiTicketUpdateMany } from "./tickets.js"
 import { apiUsersSearchByEmail, apiUsersCreateMany,  } from "./users.js"
 
@@ -21,6 +22,8 @@ import { apiUsersSearchByEmail, apiUsersCreateMany,  } from "./users.js"
             curl 'localhost:8999/api/v2/tickets/show_many?ids=187661'
         uri: `/api/v2/tickets/:id/comments`  // CURLS
             curl 'localhost:8999/api/v2/tickets/63849/comments'
+            
+            curl 'http://localhost:8999/api/v2/search.json?query=type:ticket%20-status:closed%20updated%3E2021-11-02%20-tags:tag-to-replace-has-processed%20-custom_field_1260826564690:%22skipThisTicket%22%20-custom_field_1900006024804:%22FromEmail%22&sort_by=created_at&sort_order=desc'
 */
 
 export function apiRoutes(app) {
@@ -73,6 +76,12 @@ export function apiRoutes(app) {
                 res.send(result)
             }, req, res)
         })
+    app.get('/api/v2/search.json', (req, res) => {
+        wrapHandler(()=> {
+            const result = apiSearch(req.query.query, req.query.sort_by, req.query.created_at)
+            res.send(result)
+        }, req, res)
+    })
     app.get('/api/v2/tickets/show_many', (req, res) => {
         wrapHandler(()=> {
             if (!req.query.ids) {

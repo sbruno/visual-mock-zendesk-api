@@ -25,14 +25,19 @@ export function apiUsersShowMany(payload) {
 export function apiUsersCreateMany(payload) {
     const globalState = getGlobalStateCopy()
     payload = payload['users']
-    const result = []
+    const response = []
     for (const [index, userInfo] of payload.entries()) {
         const resultUser = transformIncomingUserIntoInternal(globalState, userInfo)
-        insertPersistedUser(globalState, resultUser)
-        result.push({index: index, id: resultUser.id})
+        const alreadyFound = usersSearchByEmailImpl(globalState, resultUser.email)
+        if (alreadyFound && alreadyFound?.results?.length) {
+            response.push({index: index, id: alreadyFound.results[0].id})
+        } else {
+            insertPersistedUser(globalState, resultUser)
+            response.push({index: index, id: resultUser.id})
+        }
     }
 
-    const newJobId = addJobResultToMemory(globalState, result)
+    const newJobId = addJobResultToMemory(globalState, response)
     saveGlobalState(globalState)
     return renderPendingJob(newJobId)
 }

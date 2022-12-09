@@ -26,6 +26,7 @@ export function transformIncomingCommentIntoInternal(globalState, obj, ticketReq
     if (obj.uploads || obj.attachments) {
         throw new Error('we do not yet support attachments')
     }
+    
     return {
         id: generateCommentId(globalState.persistedState),
         created_at: obj.created_at || getCurrentTimestamp(),
