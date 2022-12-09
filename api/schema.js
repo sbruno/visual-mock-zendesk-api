@@ -5,6 +5,28 @@ import lodash from 'lodash'
 
 import { getCurrentTimestamp } from "./helpers.js";
 import { supportedStatuses } from './status.js';
+import { getDefaultAdminId } from "../persist.js";
+
+
+function transformIncomingUserIntoInternal(obj) {
+    assert(!obj.id, `new user - cannot specify id`)
+    return {
+        name: obj.name,
+        email: obj.email,
+        created_at: getCurrentTimestamp()
+    }
+}
+/*
+    export function validateIncomingUserParams(obj) {
+    assert(!obj.id, `new user - cannot specify id`)
+    let schema = yup.object({
+        name: yup.string().required(),
+        email: yup.string().required(),
+      }).noUnknown(true).required();
+      doValidateForInternal(schema, obj) 
+      return obj
+}*/
+
 export function validateInternalUser(obj) {
     let schema = yup.object({
         id: yup.number().required().positive().integer(),
@@ -12,18 +34,8 @@ export function validateInternalUser(obj) {
         email: yup.string().required(),
         created_at: yup.string().required(),
       }).noUnknown(true).required();
-      schema.validate(obj, {stripUnknown: false, strict:true}) // throws if any required are not there
+      doValidateForInternal(schema, obj) 
       checkIsoDateOrThrow(obj.created_at)
-      return obj
-}
-
-export function validateIncomingUserParams(obj) {
-    assert(!obj.id, `new user - cannot specify id`)
-    let schema = yup.object({
-        name: yup.string().required(),
-        email: yup.string().required(),
-      }).noUnknown(true).required();
-      schema.validate(obj, {stripUnknown: false, strict:true}) // does not throw if any required are not there
       return obj
 }
 
@@ -40,48 +52,11 @@ function checkIsoDateOrThrow(s) {
     }
 }
 
-// type Status = "new" | "open" | "pending" | "hold" | "solved" | "closed";
+// Status = "new" | "open" | "pending" | "hold" | "solved" | "closed"
 
 
-export function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
-    if (incomingUpdate.subject) {
-        existing.subject = incomingUpdate.subject
-    }
-    if (incomingUpdate.requester_id||incomingUpdate.assignee_id||incomingUpdate.assignee_email||
-        incomingUpdate.group_id||incomingUpdate.organization_id||incomingUpdate.collaborator_ids ||
-        incomingUpdate.additional_collaborators||incomingUpdate.followers||incomingUpdate.priority||incomingUpdate.email_ccs) {
-        throw new Error("cannot update this property, not yet implemented")
-    }
-    if (incomingUpdate.status) {
-        existing.status = incomingUpdate.status
-    }
-    if (incomingUpdate.additional_tags) { // less documented, but does work on latest api
-        assert(Array.isArray(incomingUpdate.additional_tags), 'additional_tags must be an array')
-        existing.tags = [...existing.tags, ...incomingUpdate.additional_tags]
-        existing.tags = lodash.uniq(existing.tags)
-    }
-    if (incomingUpdate.remove_tags) { // less documented, but does work on latest api
-        assert(Array.isArray(incomingUpdate.remove_tags), 'remove_tags must be an array')
-        existing.tags = existing.tags.filter(t=>!incomingUpdate.remove_tags.includes(t))
-    }
-    if (incomingUpdate.tags) {
-        existing.status = incomingUpdate.tags
-    }
-    if (incomingUpdate.external_id||incomingUpdate.problem_id||incomingUpdate.due_at||
-        incomingUpdate.updated_stamp||incomingUpdate.sharing_agreement_ids||incomingUpdate.macro_ids ||
-        incomingUpdate.attribute_value_ids) {
-        throw new Error("cannot update this property, not yet implemented")
-    }
-    // ignore safe_update for now, would be good to implement in the future for testing race conditions
-    fghfgh
-    if (incomingUpdate.custom_fields) {
-        existing.custom_fields = incomingUpdate.custom_fields
-    }
 
-    existing.modified_at = getCurrentTimestamp()
-}
-
-export function validateInternalTicket(obj) {
+export function validateInternalTicket(obj) { // ResponseModel
     // if you pass a number it will be cast to a string unless you mark the field as strict()
     let schema = yup.object({
         id: yup.number().required().positive().integer(),
@@ -127,7 +102,7 @@ export function validateInternalTicket(obj) {
         // comment_count: not yet implemented
         comment_ids: yup.array().of(yup.number()).required(), // not present in Zendesk
     }).noUnknown(true).required();
-    schema.validate(obj, {stripUnknown: false, strict:true}) // throws if any required are not there
+    doValidateForInternal(schema, obj) 
     checkIsoDateOrThrow(obj.created_at)
     checkIsoDateOrThrow(obj.modified_at)
     if (!supportedStatuses[obj.status]) {
@@ -135,6 +110,7 @@ export function validateInternalTicket(obj) {
     }
     return obj
 }
+
 
 //~ export function validateIncomingTicketParams(obj) {
     //~ if (obj?.comments?.any(comment=>comment.attachment_ids?.length)) {
@@ -161,24 +137,6 @@ export function validateInternalTicket(obj) {
 //~ }
 
 
-export function transformIncomingCommentIntoInternal(obj) {
-    if (obj.uploads || obj.attachments) {
-        throw new Error('we do not yet support attachments')
-    }
-    return {
-        id: parseInt(obj.id),
-        created_at: obj.created_at || getCurrentTimestamp(),
-        modified_at: (obj.modified_at || obj.created_at) || getCurrentTimestamp(),
-        type: "Comment",
-        body: obj.body || obj.html_body,
-        html_body: obj.body || obj.html_body,
-        plain_body: obj.body || obj.html_body, // just for simplicity
-        public: obj.public === undefined ? true : obj.public,
-        author_id: obj.author_id,
-        attachments: []
-    }
-}
-
 export function validateInternalComment(obj) {
     let schema = yup.object({
         id: yup.number().required().positive().integer(),
@@ -196,8 +154,16 @@ export function validateInternalComment(obj) {
         // via: not yet implemented
         // metadata: not yet implemented
     }).noUnknown(true).required();
-    schema.validate(obj, {stripUnknown: false, strict:true}) // throws if any required are not there
+    doValidateForInternal(schema, obj) 
     checkIsoDateOrThrow(obj.created_at)
     checkIsoDateOrThrow(obj.modified_at)
     return obj
+}
+
+function doValidateForInternal(schema, obj) {
+    // stripUnknown: throws if any required are not there
+    // strict: do not 'parse', important because internally we want to enforce the int/str distinction,
+    // for example, when getting data from outside, we'll accept either a string or int for id,
+    // but when persisting in db, always store int ids and we need strict:true to actually enforce that. 
+    schema.validate(obj, {stripUnknown: false, strict:true}) 
 }

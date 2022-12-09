@@ -68,6 +68,7 @@ export function updateTicket(globalState, id, status, custom_fields, is_public, 
     ticket.tags = [...ticket.tags, ...tags]
     ticket.tags = lodash.uniq(ticket.tags)
     validateInternalTicket(ticket)
+    runTriggersOnNewCommentPosted
 }
 
 function applyCustomFields(ticket, custom_fields) {
@@ -122,4 +123,66 @@ export function apiShowManyTickets(payload) {
         result.push(globalState.persistedState.tickets[id])
     }
     return {tickets: result}
+}
+
+
+function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
+    if (existing.status == 'closed') {
+        throw new Error('cannot update a closed ticket')
+    }
+    if (incomingUpdate.subject) {
+        existing.subject = incomingUpdate.subject
+    }
+    if (incomingUpdate.requester_id||incomingUpdate.assignee_id||incomingUpdate.assignee_email||
+        incomingUpdate.group_id||incomingUpdate.organization_id||incomingUpdate.collaborator_ids ||
+        incomingUpdate.additional_collaborators||incomingUpdate.followers||incomingUpdate.priority||incomingUpdate.email_ccs) {
+        throw new Error("cannot update this property, not yet implemented")
+    }
+    if (incomingUpdate.status) {
+        existing.status = incomingUpdate.status
+    }
+    if (incomingUpdate.additional_tags) { // less documented, but does work on latest api
+        assert(Array.isArray(incomingUpdate.additional_tags), 'additional_tags must be an array')
+        existing.tags = [...existing.tags, ...incomingUpdate.additional_tags]
+        existing.tags = lodash.uniq(existing.tags)
+    }
+    if (incomingUpdate.remove_tags) { // less documented, but does work on latest api
+        assert(Array.isArray(incomingUpdate.remove_tags), 'remove_tags must be an array')
+        existing.tags = existing.tags.filter(t=>!incomingUpdate.remove_tags.includes(t))
+    }
+    if (incomingUpdate.tags) {
+        existing.status = incomingUpdate.tags
+    }
+    if (incomingUpdate.external_id||incomingUpdate.problem_id||incomingUpdate.due_at||
+        incomingUpdate.updated_stamp||incomingUpdate.sharing_agreement_ids||incomingUpdate.macro_ids ||
+        incomingUpdate.attribute_value_ids) {
+        throw new Error("cannot update this property, not yet implemented")
+    }
+    if (incomingUpdate.custom_fields) {
+        // confirmed in zendesk api that this merges in, not replaces
+        existing.custom_fields = {...existing.custom_fields, ...incomingUpdate.custom_fields}
+    }
+    
+    // ignore safe_update for now, would be good to implement in the future for testing race conditions
+    existing.modified_at = getCurrentTimestamp()
+}
+
+function transformIncomingTicketImportIntoInternal(obj) { // CreateModel
+    assert(!obj.id, `new ticket - cannot specify id`)
+    // we've used requester->requesterid
+    if (obj.external_id || obj.type ||  obj.priority || obj.recipient 
+        || obj.organization_id || obj.group_id || obj.collaborator_ids || obj.collaborators || 
+        obj.follower_ids || obj.email_cc_ids || obj.xxxx || obj.xxxx || obj.xxxx || obj.xxxx ||) {
+        throw new Error("cannot update this property, not yet implemented")
+    }
+    return {
+        subject: (obj.subject || obj.raw_subject || '(no subject given)'),
+        raw_subject: (obj.subject || obj.raw_subject || '(no subject given)'),
+        status: (obj.status),
+        requester_id: obj.requester_id,
+        submitter_id: obj.submitter_id || obj.requester_id,
+        assignee_id: obj.assignee_id || getDefaultAdminId(),
+        tags: obj.tags || [],
+    }
+    
 }

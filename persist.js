@@ -22,11 +22,13 @@ export function onLoad() {
     globalState['persistedState'] = JSON.parse(contents)
 }
 
-
+export function getDefaultAdminId() {
+    return 111
+}
 export function resetPersistedState() {
     const empty = {
-        users: {'111': {
-            id: '111',
+        users: {[getDefaultAdminId()]: {
+            id: getDefaultAdminId(),
             created_at: getCurrentTimestamp(),
             email: 'zendeskmockadmin@zendeskmockadmin.com',
             name: 'ZendeskMockAdmin',

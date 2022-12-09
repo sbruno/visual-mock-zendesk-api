@@ -45,3 +45,20 @@ export function addCommentOnTicket(globalState, ticket, obj) {
 
 
 
+function transformIncomingCommentIntoInternal(obj) {
+    assert(!obj.id, `new comment - cannot specify id`)
+    if (obj.uploads || obj.attachments) {
+        throw new Error('we do not yet support attachments')
+    }
+    return {
+        created_at: obj.created_at || getCurrentTimestamp(),
+        modified_at: (obj.modified_at || obj.created_at) || getCurrentTimestamp(),
+        type: "Comment",
+        body: obj.body || obj.html_body,
+        html_body: obj.body || obj.html_body,
+        plain_body: obj.body || obj.html_body, // just for simplicity
+        public: obj.public === undefined ? true : obj.public,
+        author_id: obj.author_id,
+        attachments: []
+    }
+}
