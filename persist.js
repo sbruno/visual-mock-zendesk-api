@@ -20,6 +20,7 @@ export function onLoad() {
     
     const contents = fs.readFileSync('./persistedGlobalState.json', {encoding:'utf-8'})
     masterGlobalState['persistedState'] = JSON.parse(contents)
+    masterGlobalState['jobResults'] = {}
 }
 
 export function getDefaultAdminId() {

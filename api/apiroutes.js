@@ -1,5 +1,6 @@
 import { getGlobalState, getGlobalStateCopy, onLoad, resetPersistedState, saveGlobalState } from "../persist.js"
 import { apiGetTicketComments } from "./comments.js"
+import { normalizeId } from "./helpers.js"
 import { apiGetJobById } from "./jobresults.js"
 import { apiSearch } from "./search.js"
 import { apiTicketsImportCreateMany, apiTicketsShowMany, apiTicketUpdateMany } from "./tickets.js"
@@ -159,15 +160,15 @@ export function errNotImplemented(s) {
 const STATUS_NOT_IMPLEMENTED = 405
 const STATUS_BAD_REQUEST = 400
 function wrapHandler(fn, req, res) {
-    //~ fn(req, res)
-    //~ return
-    try {
-        fn(req, res)
-    } catch(e) {
-        if (e.message.startsWith('not implemented:')) {
-            res.status(STATUS_NOT_IMPLEMENTED).send({error: e.message});
-        } else {
-            res.status(STATUS_BAD_REQUEST).send({error: e.message});
-        }
-    }
+    fn(req, res)
+    return
+    //~ try {
+        //~ fn(req, res)
+    //~ } catch(e) {
+        //~ if (e.message.startsWith('not implemented:')) {
+            //~ res.status(STATUS_NOT_IMPLEMENTED).send({error: e.message});
+        //~ } else {
+            //~ res.status(STATUS_BAD_REQUEST).send({error: e.message});
+        //~ }
+    //~ }
 }

@@ -1,7 +1,7 @@
 
 import assert from "assert";
 import { saveGlobalState, getGlobalStateCopy, getGlobalState } from "../persist.js";
-import { addJobResultToMemory, getCurrentTimestamp,  generateUserId } from "./helpers.js";
+import { addJobResultToMemory, getCurrentTimestamp,  generateUserId, normalizeId } from "./helpers.js";
 import { renderPendingJob } from "./jobresults.js";
 import { insertPersistedUser, validateInternalUser } from "./schema.js";
 

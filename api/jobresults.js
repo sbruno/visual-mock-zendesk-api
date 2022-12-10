@@ -6,7 +6,7 @@ import { getCurrentTimestamp, getPortNumber } from "./helpers.js";
 
 export function apiGetJobById(jobId) {
     const globalState = getGlobalState()
-    const result = globalState?.['jobresults']?.[jobId]
+    const result = globalState?.['jobResults']?.[jobId]
     if (!result) {
         throw new Error(`job not found ${jobId}`)
     }

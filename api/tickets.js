@@ -23,8 +23,8 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
         }
         
         const foundByEmail = usersSearchByEmailImpl(globalState, em)?.users
-        if (foundByEmail) {
-            const foundByName = foundByEmail.find(user.name === nm)
+        if (foundByEmail?.length) {
+            const foundByName = foundByEmail.find(user=>user.name === nm)
             if (foundByName) {
                 obj[keyId] = normalizeId(foundByName.id)
             } else {
@@ -34,7 +34,7 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
             const resultUser = transformIncomingUserIntoInternal(globalState, {name: nm, email:em})
             insertPersistedUser(globalState, resultUser)
             console.log(`created inline User`)
-            obj[keyId] = newId
+            obj[keyId] = resultUser.id
         }
     }
 
@@ -203,10 +203,10 @@ function transformIncomingTicketImportIntoInternal(globalState, obj) {
         updated_at: obj.updated_at ||obj.created_at || getCurrentTimestamp(),
         subject: (obj.subject || obj.raw_subject || '(no subject given)'),
         raw_subject: (obj.subject || obj.raw_subject || '(no subject given)'),
-        status: (obj.status) || 'open',
+        status: obj.status || 'open',
         description: obj.description || '(no description given)',
-        requester_id: normalizeId(obj.requester_id),
-        submitter_id: normalizeId(obj.submitter_id || obj.requester_id),
+        requester_id: normalizeId(obj.requester_id || getDefaultAdminId()),
+        submitter_id: normalizeId(obj.submitter_id || obj.requester_id || getDefaultAdminId()),
         assignee_id: normalizeId(obj.assignee_id || getDefaultAdminId()),
         tags: obj.tags || [],
         custom_fields: obj.custom_fields || [],

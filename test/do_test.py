@@ -141,14 +141,21 @@ def go3UsersShowMany():
     assertEq(0, len(result['users']))
 
 def go4TicketsCreateMany():
-    # note: allowing 
+    # features:
+    #       add quotes around lots of the ids , incl custom_fields
+    #       create with no subject and no requester
+    #       inline user creation
+    #       comment shortcuts
+    #       status defaults to open
+    #       public defaults to true
     s = r'''{
     "tickets": [
       {
         "subject": "ticket1",
         "created_at": "2022-01-01T06:38:32.399Z",
         "requester_id": %USER1%,
-        "custom_fields": [{"id":345, "value":"fldval1"}, {"id":"%FLDID%", "value":"fldval2"}],
+        "status": "pending",
+        "custom_fields": [{"id":"345", "value":"fldval1"}, {"id":%FLDID%, "value":"fldval2"}],
         "comments": [
           {
             "created_at": "2022-01-02T06:38:32.399Z",
@@ -165,9 +172,12 @@ def go4TicketsCreateMany():
       }, {
         "subject": "ticket2",
         "created_at": "2022-01-01T06:38:32.399Z",
-        "requester": {name:"utest4inline", "email": "utest4inline@a.com"},
+        "requester": {"name":"utest4inline", "email": "utest4inline@a.com"},
         "tags": ["tag1", "tag2"],
-        "comment": 'plainStringComment'
+        "comment": {"body": "plainStringComment1"}
+      }, {
+        "created_at": "2022-01-01T06:38:32.399Z",
+        "comment": "plainStringComment2"
       }
     ]
   }
@@ -176,10 +186,21 @@ def go4TicketsCreateMany():
     firstCustomFld = list(customFlds.keys())[0]
     s = s.replace('%FLDID%', customFlds[firstCustomFld])
     s = s.replace('%USER1%', str(stateIds["user1"]))
+    s = s.replace('%USER2%', str(stateIds["user2"]))
+    s = s.replace('%USER3%', str(stateIds["user3"]))
     result = sendPostAndGetJob('/api/v2/imports/tickets/create_many', s)
-    assertEq(1, )
-    trace(result)
+    assertEq(3, len(result['results']))
+    assertEq(0, result['results'][0]['index'])
+    stateIds['ticket1'] = int(result['results'][0]['id'])
+    assertEq(True, result['results'][0]['success'])
+    assertEq(1, result['results'][1]['index'])
+    stateIds['ticket2'] = int(result['results'][1]['id'])
+    assertEq(True, result['results'][1]['success'])
+    assertEq(2, result['results'][2]['index'])
+    stateIds['ticket3'] = int(result['results'][2]['id'])
+    assertEq(True, result['results'][2]['success'])
 
+    ############## Confirm inline user got created ###################
     result = sendGet('/api/v2/users/search', 'query=email:utest4inline@a.com')
     assertEq(1, result['count'])
     assertEq(1, len(result['users']))
@@ -188,6 +209,8 @@ def go4TicketsCreateMany():
     assertEq('utest4inline@a.com', result['users'][0]['email'])
 
 def go5TicketsUpdateMany():
+
+    # test triggers
     pass
 def go6TicketsShowMany():
     pass
@@ -241,8 +264,14 @@ def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
     headers['Content-Type'] = 'application/json'
     headers['Accept'] = 'application/json'
 
-    assertTrue(not jsonData or isinstance(jsonData, str))
-    assertTrue(not jsonData or not '%' in jsonData, "missing template?", jsonData)
+    if jsonData:
+        assertTrue(not jsonData or isinstance(jsonData, str))
+        assertTrue(not jsonData or not '%' in jsonData, "missing template?", jsonData)
+        try:
+            json.loads(jsonData)
+        except:
+            assertTrue(False, 'looks like the json we are about to send does not parse', jsonData)
+
     r = doRequest(method, fullEndpoint, headers=headers, data=jsonData)
     if not (r.status_code>=200 and r.status_code<=299):
         trace('was sending,', method, fullEndpoint, jsonData)
@@ -266,9 +295,8 @@ def sendPostAndGetJob(endpoint, jsonData):
 def checkJobStatusOk(response, expectedStatus):
     assertEq(expectedStatus, response['job_status']['status'])
     theId = response['job_status']['id']
-    theUrl = response['job_status']['url']
     assertTrue(configs['overrideJobStatusUrlPrefix'] in response['job_status']['url'])
-    assertTrue(response['job_status']['url'].endswith('/api/v2/job_statuses/'+theId+'.json'))
+    assertTrue(response['job_status']['url'].endswith(f'/api/v2/job_statuses/{theId}.json'))
     
     if expectedStatus == 'completed':
         assertTrue(int(response['job_status']['total']) > 0)

@@ -45,21 +45,30 @@ export function generateCommentId(persistedState) {
     assert(false, 'could not generate comment id')
 }
 
+export function generateJobId(globalState) {
+    // in zendesk, these can be alphanumeric, but leave them numeric here.
+    assert(globalState['jobResults'])
+    for (let i=0; i<5; i++) {
+        let candidate = genCandidate()
+        if (!globalState['jobResults'][candidate]) {
+            return candidate
+        }
+    }
+
+    assert(false, 'could not generate job id')
+}
+
 export function normalizeId(id) {
     const ret = parseInt(id)
     if (!Number.isFinite(ret)) {
-        throw new Errir('could not parse id, ' + id)
+        throw new Error('could not parse id, ' + id)
     }
     return ret
 }
 
 export function addJobResultToMemory(globalState, payload) {
-    const jobId = crypto.randomUUID()
-    if (!globalState['jobresults']) {
-        globalState['jobresults'] = {}
-    }
-    
-    globalState['jobresults'][jobId] = payload
+    const jobId = generateJobId(globalState)
+    globalState['jobResults'][jobId] = payload
     return jobId
 }
 
