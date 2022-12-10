@@ -1,4 +1,4 @@
-import { addJobResultToMemory, generateTicketId, getCurrentTimestamp } from "./helpers.js"
+import { addJobResultToMemory, generateTicketId, getCurrentTimestamp, normalizeId } from "./helpers.js"
 import { insertPersistedComment, insertPersistedTicket, insertPersistedUser, updatePersistedTicket, validateInternalTicket } from "./schema.js"
 import assert from "assert";
 import lodash from 'lodash'
@@ -26,7 +26,7 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
         if (foundByEmail) {
             const foundByName = foundByEmail.find(user.name === nm)
             if (foundByName) {
-                obj[keyId] = foundByName.id
+                obj[keyId] = normalizeId(foundByName.id)
             } else {
                 throw new Error(`attempted inline User but did name does not match existing user with this email`)
             }
@@ -39,7 +39,7 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
     }
 
     if (obj[keyId]) {
-        obj[keyId] = parseInt(obj[keyId])
+        obj[keyId] = normalizeId(obj[keyId])
     }
 }
 
@@ -53,12 +53,13 @@ export function apiTicketsImportCreateMany(payload) {
         const resultTicket = transformIncomingTicketImportIntoInternal(globalState, ticket)
         resultTicket.comment_ids = []
         if (ticket.comment) {
-            throw new Error(`during import we only support setting comments, not comment`)
+            // Zendesk allows this shorthand
+            ticket.comments = [ticket.comment]
         }
         for (let comment of (ticket.comments||[])) {
             comment = allowShortcutStringComment(comment)
             allowInlineNewUser(globalState, comment, 'author', 'author_id')
-            const c = transformIncomingCommentIntoInternal(globalState, comment, resultTicket.requester_id)
+            const c = transformIncomingCommentIntoInternal(globalState, comment, normalizeId(resultTicket.requester_id))
             insertPersistedComment(globalState, c)
             resultTicket.comment_ids.push(c.id)
             // Because this is 'import create many', not 'standard create many', skip triggers
@@ -80,6 +81,7 @@ export function apiTicketUpdateMany(payload) {
     const response = []
 
     for (let [index, ticket] of payload.tickets.entries()) {
+        ticket.id = normalizeId(ticket.id)
         const existing = globalState.persistedState.tickets[ticket.id]
         if (!existing) {
             throw new Error(`cannot update, ticket id ${ticket.id} not found`)
@@ -96,7 +98,7 @@ export function apiTicketUpdateMany(payload) {
             }
 
             allowInlineNewUser(globalState, ticket.comment, 'author', 'author_id')
-            const c = transformIncomingCommentIntoInternal(globalState, ticket.comment, resultTicket.requester_id)
+            const c = transformIncomingCommentIntoInternal(globalState, ticket.comment, normalizeId(resultTicket.requester_id))
             insertPersistedComment(globalState, c)
             resultTicket.comment_ids.push(c.id)
             runTriggersOnNewCommentPosted(globalState, resultTicket, c)
@@ -117,12 +119,10 @@ export function apiTicketsShowMany(payload) {
     const ids = payload.split(',')
     const result = []
     for (let id of ids) {
-        id = id.trim()
-        if (!parseInt(id)) {
-            throw new Error(`not a ticket id ${id}`)
-        }
+        id = normalizeId(id)
         if (!globalState.persistedState.tickets[id]) {
-            throw new Error(`ticket not found ${id}`)
+            console.log(`ticket not found ${id}`)
+            continue
         }
         result.push(globalState.persistedState.tickets[id])
     }
@@ -138,11 +138,20 @@ function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
     if (incomingUpdate.subject) {
         existing.subject = incomingUpdate.subject
     }
-    if (incomingUpdate.requester_id||incomingUpdate.assignee_id||incomingUpdate.assignee_email||
+    if (incomingUpdate.assignee_email||
         incomingUpdate.group_id||incomingUpdate.organization_id||incomingUpdate.collaborator_ids ||
         incomingUpdate.additional_collaborators||incomingUpdate.followers||incomingUpdate.priority||incomingUpdate.email_ccs) {
         throw new Error("cannot update this property, not yet implemented")
     }
+
+    /* interestingly we can update these */
+    if (incomingUpdate.requester_id) {
+        existing.requester_id = normalizeId(incomingUpdate.requester_id)
+    }
+    if (incomingUpdate.assignee_id) {
+        existing.assignee_id = normalizeId(incomingUpdate.assignee_id)
+    }
+
     if (incomingUpdate.status) {
         existing.status = incomingUpdate.status
     }
@@ -196,9 +205,9 @@ function transformIncomingTicketImportIntoInternal(globalState, obj) {
         raw_subject: (obj.subject || obj.raw_subject || '(no subject given)'),
         status: (obj.status) || 'open',
         description: obj.description || '(no description given)',
-        requester_id: obj.requester_id,
-        submitter_id: obj.submitter_id || obj.requester_id,
-        assignee_id: obj.assignee_id || getDefaultAdminId(),
+        requester_id: normalizeId(obj.requester_id),
+        submitter_id: normalizeId(obj.submitter_id || obj.requester_id),
+        assignee_id: normalizeId(obj.assignee_id || getDefaultAdminId()),
         tags: obj.tags || [],
         custom_fields: obj.custom_fields || [],
         fields: obj.fields || [],

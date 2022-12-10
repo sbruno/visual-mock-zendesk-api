@@ -7,14 +7,15 @@ import { insertPersistedUser, validateInternalUser } from "./schema.js";
 
 export function apiUsersShowMany(payload) {
     const globalState = getGlobalState()
+    console.log('**'+payload+'**')
     const ids = payload.split(',')
     const result = []
     for (let id of ids) {
-        id = id.trim()
-        if (!parseInt(id)) {
-            throw new Error(`not a user id ${id}`)
-        } else if (!globalState.persistedState.users[id]) {
-            throw new Error(`user not found ${id}`)
+        id = normalizeId(id)
+        if (!globalState.persistedState.users[id]) {
+            // Matching zendesk api, skip and continue
+            console.log(`user not found ${id}`)
+            continue
         }
 
         result.push(globalState.persistedState.users[id])

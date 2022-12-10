@@ -98,7 +98,7 @@ export function apiRoutes(app) {
             if (!req.params.id || !parseInt(req.params.id)) {
                 throw errNotImplemented('no ticketid given')
             }
-            const ticketId = parseInt(req.params.id)
+            const ticketId = normalizeId(req.params.id)
             const result = apiGetTicketComments(ticketId)
             res.send(result)
         }, req, res)
@@ -116,7 +116,7 @@ export function apiRoutes(app) {
             if (!req.params.id) {
                 throw errNotImplemented('no jobid given')
             }
-            const jobid = req.params.id.replace('.json', '')
+            const jobid = normalizeId(req.params.id.replace('.json', ''))
             const result = apiGetJobById(jobid)
             res.send(result)
         }, req, res)
@@ -127,7 +127,7 @@ export function apiRoutes(app) {
             if (!req.params.id) {
                 throw errNotImplemented('no jobid given')
             }
-            const jobid = req.params.id.replace('.json', '')
+            const jobid = normalizeId(req.params.id.replace('.json', ''))
             const result = apiGetJobById(jobid)
             res.send(result)
         }, req, res)
@@ -161,7 +161,7 @@ const STATUS_BAD_REQUEST = 400
 function wrapHandler(fn, req, res) {
     //~ fn(req, res)
     //~ return
-        try {
+    try {
         fn(req, res)
     } catch(e) {
         if (e.message.startsWith('not implemented:')) {

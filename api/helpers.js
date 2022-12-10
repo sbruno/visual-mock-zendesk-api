@@ -45,6 +45,14 @@ export function generateCommentId(persistedState) {
     assert(false, 'could not generate comment id')
 }
 
+export function normalizeId(id) {
+    const ret = parseInt(id)
+    if (!Number.isFinite(ret)) {
+        throw new Errir('could not parse id, ' + id)
+    }
+    return ret
+}
+
 export function addJobResultToMemory(globalState, payload) {
     const jobId = crypto.randomUUID()
     if (!globalState['jobresults']) {

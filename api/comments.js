@@ -1,6 +1,6 @@
 import assert from "assert";
 import { getGlobalState } from "../persist.js";
-import { generateCommentId, getCurrentTimestamp } from "./helpers.js";
+import { generateCommentId, getCurrentTimestamp, normalizeId } from "./helpers.js";
 import { validateInternalUser } from "./schema.js";
 
 
@@ -14,6 +14,7 @@ export function apiGetTicketComments(ticketId) {
     // don't implement pagination yet
     const results = []
     for (let commentId of ticket.comment_ids) {
+        commentId = normalizeId(commentId)
         const comment = globalState.persistedState.comments[commentId]
         results.push(comment)
     }
@@ -45,7 +46,7 @@ export function transformIncomingCommentIntoInternal(globalState, obj, ticketReq
         html_body: obj.body || obj.html_body,
         plain_body: obj.body || obj.html_body, // just for simplicity
         public: obj.public === undefined ? true : obj.public,
-        author_id: obj.author_id || ticketRequester,
+        author_id: normalizeId(obj.author_id || ticketRequester),
         attachments: []
     }
 }

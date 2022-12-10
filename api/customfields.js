@@ -1,5 +1,6 @@
 import { getGlobalState } from "../persist.js"
 import lodash from 'lodash'
+import { normalizeId } from "./helpers.js"
 
 
 export function renderCustomFields(ticket) {
@@ -23,7 +24,7 @@ export function intCustomFields(obj) {
     if (obj && obj.custom_fields) {
         for (let fld of obj.custom_fields) {
             if (fld.id) {
-                fld.id = parseInt(fld.id)
+                fld.id = normalizeId(fld.id)
             }
         }
     }

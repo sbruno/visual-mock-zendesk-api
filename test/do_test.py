@@ -62,8 +62,7 @@ def go1UsersCreateMany():
    "name": "utest2"
 }]}
     '''
-    response = sendPostAndGetJob('/api/v2/users/create_many', jsonData=template)
-    result = response['job_status']
+    result = sendPostAndGetJob('/api/v2/users/create_many', jsonData=template)
     assertEq(2, len(result['results']))
 
     assertEq(0, result['results'][0]['index'])
@@ -79,7 +78,6 @@ def go1UsersCreateMany():
 
     stateIds['user1'] = int(result['results'][0]['id'])
     stateIds['user2'] = int(result['results'][1]['id'])
-    return
 
     ############## Successes and already exists ###################
     template = r'''{"users": [
@@ -109,39 +107,48 @@ def go1UsersCreateMany():
     stateIds['user3'] = int(result['results'][1]['id'])
 
 def go2UsersSearch():
-    pass
-def go3UsersShowMany():
-    pass
-def go4TicketsCreateMany():
-    pass
-def go5TicketsUpdateMany():
-    pass
-def go6TicketsShowMany():
-    pass
-def go7TicketsShowComments():
-    pass
-def go8Search():
-    pass
+    ############## One result ###################
+    result = sendGet('/api/v2/users/search', 'query=email:utest3@a.com')
+    assertEq(1, result['count'])
+    assertEq(1, len(result['users']))
+    assertTrue(int(result['users'][0]['id']) > 0)
+    assertEq('utest3', result['users'][0]['name'])
+    assertEq('utest3@a.com', result['users'][0]['email'])
 
-
-def go():
-    go1UsersCreateMany()
-    #~ go2UsersSearch()
-    #~ go3UsersShowMany()
-    #~ go4TicketsCreateMany()
-    #~ go5TicketsUpdateMany()
-    #~ go6TicketsShowMany()
-    #~ go7TicketsShowComments()
-    #~ go8Search()
-    return
+    ############## No results ###################
+    result = sendGet('/api/v2/users/search', 'query=email:utest444@a.com')
+    assertEq(0, result['count'])
+    assertEq(0, len(result['users']))
     
-    template = r'''{
+def go3UsersShowMany():
+    ############## One result ###################
+    result = sendGet('/api/v2/users/show_many', f'ids={stateIds["user1"]}')
+    assertEq(1, len(result['users']))
+    assertEq(stateIds["user1"], result['users'][0]['id'])
+    assertEq('utest1', result['users'][0]['name'])
+    assertEq('utest1@a.com', result['users'][0]['email'])
+    ############## Many results ###################
+    result = sendGet('/api/v2/users/show_many', f'ids={stateIds["user2"]},999,{stateIds["user3"]}')
+    assertEq(2, len(result['users']))
+    assertEq(stateIds["user2"], result['users'][0]['id'])
+    assertEq('utest2', result['users'][0]['name'])
+    assertEq('utest2@a.com', result['users'][0]['email'])
+    assertEq(stateIds["user3"], result['users'][1]['id'])
+    assertEq('utest3', result['users'][1]['name'])
+    assertEq('utest3@a.com', result['users'][1]['email'])
+    ############## No results ###################
+    result = sendGet('/api/v2/users/show_many', f'ids=999')
+    assertEq(0, len(result['users']))
+
+def go4TicketsCreateMany():
+    # note: allowing 
+    s = r'''{
     "tickets": [
       {
         "subject": "ticket1",
         "created_at": "2022-01-01T06:38:32.399Z",
         "requester_id": %USER1%,
-        "custom_fields": [{"id":345, "value":"fldval1"}, {"id":%FLDID%, "value":"fldval2"}],
+        "custom_fields": [{"id":345, "value":"fldval1"}, {"id":"%FLDID%", "value":"fldval2"}],
         "comments": [
           {
             "created_at": "2022-01-02T06:38:32.399Z",
@@ -155,15 +162,52 @@ def go():
             "public": true
           }
         ]
+      }, {
+        "subject": "ticket2",
+        "created_at": "2022-01-01T06:38:32.399Z",
+        "requester": {name:"utest4inline", "email": "utest4inline@a.com"},
+        "tags": ["tag1", "tag2"],
+        "comment": 'plainStringComment'
       }
     ]
   }
   '''
     customFlds = configs['customFields']
     firstCustomFld = list(customFlds.keys())[0]
-    s = template.replace('%FLDID%', customFlds[firstCustomFld])
-    s = template.replace('%USER1%', user1)
-    sendPost()
+    s = s.replace('%FLDID%', customFlds[firstCustomFld])
+    s = s.replace('%USER1%', str(stateIds["user1"]))
+    result = sendPostAndGetJob('/api/v2/imports/tickets/create_many', s)
+    assertEq(1, )
+    trace(result)
+
+    result = sendGet('/api/v2/users/search', 'query=email:utest4inline@a.com')
+    assertEq(1, result['count'])
+    assertEq(1, len(result['users']))
+    assertTrue(int(result['users'][0]['id']) > 0)
+    assertEq('utest4inline', result['users'][0]['name'])
+    assertEq('utest4inline@a.com', result['users'][0]['email'])
+
+def go5TicketsUpdateMany():
+    pass
+def go6TicketsShowMany():
+    pass
+def go7TicketsShowComments():
+    pass
+def go8Search():
+    pass
+
+
+def go():
+    go1UsersCreateMany()
+    go2UsersSearch()
+    go3UsersShowMany()
+    go4TicketsCreateMany()
+    go5TicketsUpdateMany()
+    go6TicketsShowMany()
+    go7TicketsShowComments()
+    go8Search()
+    trace('\n\nall tests complete')
+
 
 def quote(s):
     return urllib.parse.quote(s)
@@ -174,8 +218,7 @@ def sendGet(endpoint, encodedQueryString=''):
 def sendPost(endpoint, jsonData):
     return sendImpl('POST', endpoint, jsonData=jsonData)
 
-
-def sendImpl(method, endpoint, jsonData=None, encodedQueryString=None):
+def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
     global configs
     if not endpoint.endswith('delete_all'):
         if not doWithJson:
@@ -187,10 +230,10 @@ def sendImpl(method, endpoint, jsonData=None, encodedQueryString=None):
     if encodedQueryString:
         encodedQueryString = '?' + encodedQueryString
     if endpoint.startswith('http'):
-        fullEndpoint = endpoint
+        fullEndpoint = f'{endpoint}{encodedQueryString}'
     else:
         assertTrue(endpoint.startswith('/api'), endpoint)
-        fullEndpoint = f'{host}{endpoint}'
+        fullEndpoint = f'{host}{endpoint}{encodedQueryString}'
 
     # would use curl, but want to fail on non-2xx responses
     # and most distros don't have latest curl with --fail-with-body
@@ -217,7 +260,7 @@ def sendPostAndGetJob(endpoint, jsonData):
     checkJobStatusOk(jobStatus, 'queued')
     response = sendGet(jobStatus['job_status']['url'])
     checkJobStatusOk(response, 'completed')
-    return response
+    return response['job_status']
     
     
 def checkJobStatusOk(response, expectedStatus):
