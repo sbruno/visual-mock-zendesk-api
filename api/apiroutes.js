@@ -16,13 +16,13 @@ import { apiUsersSearchByEmail, apiUsersCreateMany, apiUsersShowMany } from "./u
         4 uri: '/api/v2/imports/tickets/create_many' // CURLS
             see json in the ./test directory
             curl -d '@./test/curl_import.json' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/imports/tickets/create_many'
-        5 uri: '/api/v2/tickets/update_many.json' // CURLS
+        5 uri: `/api/v2/tickets/show_many`  // CURLS
+            curl 'localhost:8999/api/v2/tickets/show_many?ids=187661'
+        6 uri: `/api/v2/tickets/:id/comments`  // CURLS
+            curl 'localhost:8999/api/v2/tickets/63849/comments'
+        7 uri: '/api/v2/tickets/update_many.json' // CURLS
             see json in the ./test directory
             curl -d '@./test/curl_update.json' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/tickets/update_many.json'
-        6 uri: `/api/v2/tickets/show_many`  // CURLS
-            curl 'localhost:8999/api/v2/tickets/show_many?ids=187661'
-        7 uri: `/api/v2/tickets/:id/comments`  // CURLS
-            curl 'localhost:8999/api/v2/tickets/63849/comments'
         8 uri: `/api/v2/search`
             curl 'http://localhost:8999/api/v2/search.json?query=type:ticket%20-status:closed%20updated%3E2021-11-02%20-tags:tag-to-replace-has-processed%20-custom_field_1260826564690:%22skipThisTicket%22%20-custom_field_1900006024804:%22FromEmail%22&sort_by=created_at&sort_order=desc'
 */

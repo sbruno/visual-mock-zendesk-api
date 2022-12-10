@@ -18,7 +18,7 @@ export function apiGetTicketComments(ticketId) {
         const comment = globalState.persistedState.comments[commentId]
         results.push(comment)
     }
-    return { comments:results, otherPagesRemain:false, next_page:undefined}
+    return { comments:results, otherPagesRemain:false, next_page:undefined, count: results.length}
 }
 
 export function allowShortcutStringComment(obj) {
