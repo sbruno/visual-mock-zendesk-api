@@ -2,7 +2,7 @@
 
 import assert from "assert";
 import { getGlobalState } from "../persist.js";
-import { getCurrentTimestamp, portNumber } from "./helpers.js";
+import { getCurrentTimestamp, getPortNumber } from "./helpers.js";
 
 export function apiGetJobById(jobId) {
     const globalState = getGlobalState()
@@ -18,8 +18,12 @@ export function renderPendingJob(jobId) {
     return {
         job_status: {
             id: jobId,
-            url: `http://localhost:${portNumber}${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/${jobId}.json`,
-            "status":"pending"
+            url: `http://localhost:${getPortNumber()}${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/${jobId}.json`,
+            "status": "queued",
+            total: None,
+            progress: None,
+            message: None,
+            results: None
         }
     }
 }
@@ -29,8 +33,8 @@ export function renderCompletedJob(jobId, payload) {
     return {
         job_status: {
             id: jobId,
-            url: `http://localhost:${portNumber}${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/${jobId}.json`,
-            "status":"completed",
+            url: `http://localhost:${getPortNumber()}${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/${jobId}.json`,
+            "status": "completed",
             total: payload?.length,
             progress: payload?.length,
             message: `Completed at ${getCurrentTimestamp()}`,

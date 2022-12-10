@@ -2,8 +2,12 @@
 
 import assert from "assert";
 import crypto from 'crypto';
+import { getGlobalState } from "../persist.js";
 
-export const portNumber = 8999
+export function getPortNumber() {
+    const globalState = getGlobalState()
+    return globalState.globalConfigs?.portNumber || 8999
+}
 
 export function generateUserId(persistedState) {
     assert(persistedState['users'])

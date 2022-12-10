@@ -1,7 +1,7 @@
 
 // https://regbrain.com/article/bootstrap-express
 // https://www.edureka.co/blog/rest-api-with-node-js/
-// Run 'node app' to launch.
+// Run 'npm start' to launch.
 import express from 'express';
 import http from 'http';
 import nunjucks from 'nunjucks';
@@ -10,8 +10,8 @@ import sassMiddleware from 'node-sass-middleware';
 import { onLoad } from './persist.js';
 import { webRoutes } from './web/webroutes.js';
 import { apiRoutes } from './api/apiroutes.js';
-import { portNumber } from './api/helpers.js';
-// import cors from 'cors';
+import { getPortNumber } from './api/helpers.js';
+
 
 let app = express()
 const rootdir = '.'
@@ -35,7 +35,7 @@ app.use(sassMiddleware({
 app.use(express.static(path.join(rootdir, 'public')))
 
 app.use(express.json()) // needed to get post.body
-// app.use(express.urlencoded()) // needed for frontend to communi
+// app.use(express.urlencoded())
 // app.use(cors());
 
 onLoad() // call before defining routes
@@ -45,7 +45,7 @@ apiRoutes(app)
 
 let server = http.createServer(app)
 
-server.listen(portNumber.toString(), () => {
-  console.log(`Listening on port ${portNumber}...`)
+server.listen(getPortNumber().toString(), () => {
+  console.log(`Listening on port ${getPortNumber()}...`)
 })
 
