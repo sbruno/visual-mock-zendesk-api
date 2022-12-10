@@ -28,7 +28,19 @@ import { apiUsersSearchByEmail, apiUsersCreateMany, apiUsersShowMany } from "./u
 
 export function apiRoutes(app) {
       const globalState = getGlobalState()
-      app.get('/api/v2/users/search', (req, res) => {
+      const register = (method, endpoint, fn)=> {
+        app[method](endpoint, fn)
+        app[method](endpoint + '.json', fn)
+      }
+
+      register('post', '/api/v2/users/create_many', (req, res) => {
+        wrapHandler(()=> {
+            const result = apiUsersCreateMany(req.body)
+            res.send(result)
+        }, req, res)
+      })
+
+      register('get', '/api/v2/users/search', (req, res) => {
         wrapHandler(()=> {
             const query = req.query.query
             if (!query) {
@@ -46,19 +58,8 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
-    app.post('/api/v2/users/create_many', (req, res) => {
-        wrapHandler(()=> {
-            const result = apiUsersCreateMany(req.body)
-            res.send(result)
-        }, req, res)
-      })
-        app.post('/api/v2/users/create_many.json', (req, res) => {
-            wrapHandler(()=> {
-                const result = apiUsersCreateMany(req.body)
-                res.send(result)
-            }, req, res)
-        })
-    app.get('/api/v2/users/show_many', (req, res) => {
+        
+    register('get', '/api/v2/users/show_many', (req, res) => {
         wrapHandler(()=> {
             if (!req.query.ids) {
                 throw errNotImplemented('no ids given')
@@ -67,22 +68,22 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
-        app.get('/api/v2/users/show_many.json', (req, res) => {
-            wrapHandler(()=> {
-                if (!req.query.ids) {
-                    throw errNotImplemented('no ids given')
-                }
-                const result = apiUsersShowMany(req.query.ids)
-                res.send(result)
-            }, req, res)
-        })
-    app.get('/api/v2/search.json', (req, res) => {
+
+      register('post', '/api/v2/imports/tickets/create_many', (req, res) => {
         wrapHandler(()=> {
-            const result = apiSearch(req.query.query, req.query.sort_by, req.query.created_at)
+            const result = apiTicketsImportCreateMany(req.body)
             res.send(result)
         }, req, res)
-    })
-    app.get('/api/v2/tickets/show_many', (req, res) => {
+      })
+
+      register('post', '/api/v2/tickets/update_many', (req, res) => {
+        wrapHandler(()=> {
+            const result = apiTicketUpdateMany(req.body)
+            res.send(result)
+        }, req, res)
+      })
+
+    register('get', '/api/v2/tickets/show_many', (req, res) => {
         wrapHandler(()=> {
             if (!req.query.ids) {
                 throw errNotImplemented('no ids given')
@@ -91,40 +92,8 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
     })
-        app.get('/api/v2/tickets/show_many.json', (req, res) => {
-            wrapHandler(()=> {
-                if (!req.query.ids) {
-                    throw errNotImplemented('no ids given')
-                }
-                const result = apiTicketsShowMany(req.query.ids)
-                res.send(result)
-            }, req, res)
-        })
-    app.post('/api/v2/imports/tickets/create_many', (req, res) => {
-        wrapHandler(()=> {
-            const result = apiTicketsImportCreateMany(req.body)
-            res.send(result)
-        }, req, res)
-      })
-        app.post('/api/v2/imports/tickets/create_many.json', (req, res) => {
-            wrapHandler(()=> {
-                const result = apiTicketsImportCreateMany(req.body)
-                res.send(result)
-            }, req, res)
-        })
-    app.post('/api/v2/tickets/update_many', (req, res) => {
-        wrapHandler(()=> {
-            const result = apiTicketUpdateMany(req.body)
-            res.send(result)
-        }, req, res)
-      })
-        app.post('/api/v2/tickets/update_many.json', (req, res) => {
-            wrapHandler(()=> {
-                const result = apiTicketUpdateMany(req.body)
-                res.send(result)
-            }, req, res)
-        })
-    app.get('/api/v2/tickets/:id/comments', (req, res) => {
+      
+    register('get', '/api/v2/tickets/:id/comments', (req, res) => {
         wrapHandler(()=> {
             if (!req.params.id || !parseInt(req.params.id)) {
                 throw errNotImplemented('no ticketid given')
@@ -134,7 +103,15 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
-      app.get('/api/v2/job_statuses/:id', (req, res) => {
+
+      register('get', '/api/v2/search', (req, res) => {
+        wrapHandler(()=> {
+            const result = apiSearch(req.query.query, req.query.sort_by, req.query.created_at)
+            res.send(result)
+        }, req, res)
+    })
+
+      register('get', '/api/v2/job_statuses/:id', (req, res) => {
         wrapHandler(()=> {
             if (!req.params.id) {
                 throw errNotImplemented('no jobid given')
@@ -144,17 +121,8 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
-        app.get('/api/v2/job_statuses/:id.json', (req, res) => {
-            wrapHandler(()=> {
-                if (!req.params.id) {
-                    throw errNotImplemented('no jobid given')
-                }
-                const jobid = req.params.id.replace('.json', '')
-                const result = apiGetJobById(jobid)
-                res.send(result)
-            }, req, res)
-        })
-      app.get(`${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/:id`, (req, res) => {
+      
+      register('get', `${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/:id`, (req, res) => {
         wrapHandler(()=> {
             if (!req.params.id) {
                 throw errNotImplemented('no jobid given')
@@ -164,17 +132,8 @@ export function apiRoutes(app) {
             res.send(result)
         }, req, res)
       })
-        app.get(`${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/:id.json`, (req, res) => {
-            wrapHandler(()=> {
-                if (!req.params.id) {
-                    throw errNotImplemented('no jobid given')
-                }
-                const jobid = req.params.id.replace('.json', '')
-                const result = apiGetJobById(jobid)
-                res.send(result)
-            }, req, res)
-        })
-      app.post('/api/delete_all_tickets', (req, res) => {
+        
+      register('post', '/api/delete_all_tickets', (req, res) => {
         wrapHandler(()=> {
             const globalState = getGlobalStateCopy()
             globalState.persistedState.tickets = {}
@@ -183,7 +142,8 @@ export function apiRoutes(app) {
             res.send({})
         }, req, res)
       })
-      app.post('/api/delete_all', (req, res) => {
+
+      register('post', '/api/delete_all', (req, res) => {
         wrapHandler(()=> {
             resetPersistedState()
             onLoad()
@@ -199,13 +159,15 @@ export function errNotImplemented(s) {
 const STATUS_NOT_IMPLEMENTED = 405
 const STATUS_BAD_REQUEST = 400
 function wrapHandler(fn, req, res) {
-    //~ try {
+    //~ fn(req, res)
+    //~ return
+        try {
         fn(req, res)
-    //~ } catch(e) {
-        //~ if (e.message.startsWith('not implemented:')) {
-            //~ res.status(STATUS_NOT_IMPLEMENTED).send({error: e.message});
-        //~ } else {
-            //~ res.status(STATUS_BAD_REQUEST).send({error: e.message});
-        //~ }
-    //~ }
+    } catch(e) {
+        if (e.message.startsWith('not implemented:')) {
+            res.status(STATUS_NOT_IMPLEMENTED).send({error: e.message});
+        } else {
+            res.status(STATUS_BAD_REQUEST).send({error: e.message});
+        }
+    }
 }

@@ -20,10 +20,10 @@ export function renderPendingJob(jobId) {
             id: jobId,
             url: `http://localhost:${getPortNumber()}${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/${jobId}.json`,
             "status": "queued",
-            total: None,
-            progress: None,
-            message: None,
-            results: None
+            total: null,
+            progress: null,
+            message: null,
+            results: null
         }
     }
 }

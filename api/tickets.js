@@ -70,8 +70,9 @@ export function apiTicketsImportCreateMany(payload) {
 
     // Because this is 'import create many', not 'standard create many', skip triggers
     const newJobId = addJobResultToMemory(globalState, response)
+    const finalResponse = renderPendingJob(newJobId)
     saveGlobalState(globalState)
-    return renderPendingJob(newJobId)
+    return finalResponse
 }
 
 export function apiTicketUpdateMany(payload) {
@@ -106,8 +107,9 @@ export function apiTicketUpdateMany(payload) {
     }
 
     const newJobId = addJobResultToMemory(globalState, response)
+    const finalResponse = renderPendingJob(newJobId)
     saveGlobalState(globalState)
-    return renderPendingJob(newJobId)
+    return finalResponse
 }
 
 export function apiTicketsShowMany(payload) {
