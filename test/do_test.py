@@ -147,28 +147,29 @@ def go3UsersShowMany():
     
 
 def go4TicketsCreateMany():
-    # features:
-    #       add quotes around lots of the ids , incl custom_fields
-    #       create with no subject and no requester
-    #       inline user creation
-    #       comment syntax shortcuts
-    #       comment author defaults to requester, which defaults to admin
-    #       status defaults to open
-    #       public defaults to true
+    # author defaults
+    #     requester set, author set (comment1)
+    #     requester set, author not set but prev is (comment2)
+    #     requester set, author not set (testAuthorId1)
+    #     requester not set, author set  (testAuthorId2)
+    #     requester not set, author not set but prev is (testAuthorId3)
+    #     requester not set, author not set (plainStringComment2)
     s = r'''{
     "tickets": [
       {
         "subject": "ticket1",
+        "description": "descr1",
         "created_at": "2022-01-01T06:38:32.399Z",
         "requester_id": %USER1%,
-        "status": "pending",
+        "status": "pending", ### note ids are sometimes quoted, sometimes not, need to support both
         "custom_fields": [{"id":"345", "value":"fldval1"}, {"id":%FLDID%, "value":"fldval2"}],
+        "tags": ["tag1", "tag2"],
         "comments": [
           {
             "created_at": "2022-01-02T06:38:32.399Z",
             "body": "comment1",
             "public": false,
-            "author_id": %USER1%
+            "author_id": %USER2%
           },
           {
             "created_at": "2022-01-03T06:38:32.399Z",
@@ -178,33 +179,44 @@ def go4TicketsCreateMany():
         ]
       }, {
         "subject": "ticket2",
+        "description": "descr2",
         "created_at": "2022-01-01T06:38:32.399Z",
-        "requester": {"name":"utest4inline", "email": "utest4inline@a.com"},
+        "requester": {"name":"utest4inline", "email": "utest4inline@a.com"}, ### inline user creation
         "tags": ["tag1", "tag2"],
-        "comment": {"body": "plainStringComment1"}
-      }, {
-        "comment": "plainStringComment2"
+        "comment": {"body": "plainStringComment1"} ### comment syntax shortcut, comment not comments
+        ### status default to open
+        ### comments default to public=true
+      },
+      {
+        "description": "descr3", ### create a ticket with no subject and no requester
+        "comment": "plainStringComment2" ### comment syntax shortcut, string data type
+        "tags": ["tag1", "tag2"],
+      },
+      {
+        "description": "descr4",
+        "requester_id": %USER2%,
+        "submitter_id": %USER3%,
+        "comments": [{"body": "testAuthorId1"}]
+      },
+      {
+        "description": "descr5",
+        "comments": [{"body": "testAuthorId2", "author_id": "%USER1%"}, {"body": "testAuthorId3"}]
+      },
+      {
+        "description": "descr6",
+        "requester_id": %USER1%,
+        "comments": [{"body": "testAuthorIdUpdate", "author_id": "%USER2%"}]
       }
     ]
   }
   '''
-    customFlds = configs['customFields']
-    firstCustomFld = list(customFlds.keys())[0]
-    s = s.replace('%FLDID%', customFlds[firstCustomFld])
-    s = s.replace('%USER1%', str(stateIds["user1"]))
-    s = s.replace('%USER2%', str(stateIds["user2"]))
-    s = s.replace('%USER3%', str(stateIds["user3"]))
+    s = subInTemplates(s)
     result = sendPostAndGetJob('/api/v2/imports/tickets/create_many', s)
-    assertEq(3, len(result['results']))
-    assertEq(0, result['results'][0]['index'])
-    stateIds['ticket1'] = int(result['results'][0]['id'])
-    assertEq(True, result['results'][0]['success'])
-    assertEq(1, result['results'][1]['index'])
-    stateIds['ticket2'] = int(result['results'][1]['id'])
-    assertEq(True, result['results'][1]['success'])
-    assertEq(2, result['results'][2]['index'])
-    stateIds['ticket3'] = int(result['results'][2]['id'])
-    assertEq(True, result['results'][2]['success'])
+    assertEq(6, len(result['results']))
+    for i in range(6):
+        assertEq(i, result['results'][i]['index'])
+        stateIds[f'ticket{i+1}'] = int(result['results'][i]['id'])
+        assertEq(True, result['results'][i]['success'])
 
     ############## Confirm inline user got created ###################
     result = sendGet('/api/v2/users/search', 'query=email:utest4inline@a.com')
@@ -326,7 +338,7 @@ def go6TicketsShowComments():
     assertEq('comment1', c['html_body'])
     assertEq('comment1', c['plain_body'])
     assertEq(False, c['public'])
-    assertEq(stateIds['user1'], c['author_id'])
+    assertEq(stateIds['user2'], c['author_id'])
     assertEq([], c['attachments'])
 
     c = result['comments'][1]
@@ -339,8 +351,67 @@ def go6TicketsShowComments():
     assertEq(stateIds['user1'], c['author_id'])
     assertEq([], c['attachments'])
 
+    ############## Test default authors ###################
+    result1 = sendGet(f'/api/v2/tickets/{stateIds["ticket1"]}/comments')
+    result3 = sendGet(f'/api/v2/tickets/{stateIds["ticket3"]}/comments')
+    result4 = sendGet(f'/api/v2/tickets/{stateIds["ticket4"]}/comments')
+    result5 = sendGet(f'/api/v2/tickets/{stateIds["ticket5"]}/comments')
+    #           requester set, author set (comment1)
+    assertEq('comment1', result1['comments'][0]['plain_body'])
+    assertEq(stateIds['user2'], result1['comments'][0]['author_id'])
+    #           requester set, author not set but prev is (comment2)
+    assertEq('comment2', result1['comments'][1]['plain_body'])
+    assertEq(stateIds['user1'], result1['comments'][1]['author_id'])
+    #           requester set, author not set (testAuthorId1)
+    assertEq('testAuthorId1', result4['comments'][0]['plain_body'])
+    assertEq(stateIds['user2'], result4['comments'][0]['author_id'])
+    #           requester not set, author set  (testAuthorId2)
+    assertEq('testAuthorId2', result5['comments'][0]['plain_body'])
+    assertEq(stateIds['user1'], result5['comments'][0]['author_id'])
+    #           requester not set, author not set but prev is (testAuthorId3)
+    assertEq('testAuthorId3', result5['comments'][1]['plain_body'])
+    assertEq(stateIds['admin'], result5['comments'][1]['author_id'])
+    #           requester not set, author not set (plainStringComment2)
+    assertEq('plainStringComment2', result3['comments'][0]['plain_body'])
+    assertEq(stateIds['admin'], result3['comments'][0]['author_id'])
+    # look at tickets
+    result = sendGet('/api/v2/tickets/show_many', f'ids={stateIds["ticket3"]},{stateIds["ticket4"]},{stateIds["ticket5"]}')
+    assertEq(stateIds['admin'], result['tickets'][0]['requester_id'])
+    assertEq(stateIds['admin'], result['tickets'][0]['submitter_id'])
+    assertEq(stateIds['user2'], result['tickets'][1]['requester_id'])
+    assertEq(stateIds['user3'], result['tickets'][1]['submitter_id'])
+    assertEq(stateIds['admin'], result['tickets'][2]['requester_id'])
+    assertEq(stateIds['admin'], result['tickets'][2]['submitter_id'])
+
+
 def go7TicketsUpdateMany():
-    #test #if defaults to requester or admin
+    # change requesterid and assignerid and status
+    # post comment without an author id, where prev comment != requesterid != admin
+    # additionaltags should remove duplicates
+    # removetags should remove duplicates
+    # settags should replace existing and remove duplicates
+
+    # custom fields should merge in changes, not replace
+    s = ''' {
+    "tickets": [
+      {
+        "id": %TICKET1%,
+        "status": "pending",
+        "comment": 
+        {
+            "body": "add another",
+            "public": true,
+            "author_id": 111
+        },
+        "custom_fields" : [{"id":123, "value":"addthis"}, {"id":345, "value":"changethis"}]
+      }
+    ]
+  }
+    '''
+    s = subInTemplates(s)
+
+
+    # test if defaults to requester or admin
     # test triggers
     pass
 
@@ -365,6 +436,20 @@ def confirmSet(obj, flds):
     for fld in flds:
         assertTrue(fld in obj, f'field {fld} not present')
         assertTrue(obj[fld], f'field {fld} is null/None')
+
+def subInTemplates(s):
+    customFlds = configs['customFields']
+    lCustomFlds = list(customFlds.keys())
+    s = s.replace('%FLDID1%', customFlds[lCustomFlds[0]])
+    s = s.replace('%FLDID2%', customFlds[lCustomFlds[1]])
+    s = s.replace('%FLDID3%', customFlds[lCustomFlds[2]])
+    s = s.replace('%USER1%', str(stateIds["user1"]))
+    s = s.replace('%USER2%', str(stateIds["user2"]))
+    s = s.replace('%USER3%', str(stateIds["user3"]))
+    for i in range(6):
+        s = s.replace(f'%TICKET{i+1}%', str(stateIds[f'ticket{i+1}']))
+
+    return s
 
 def quote(s):
     return urllib.parse.quote(s)
@@ -401,6 +486,7 @@ def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
     if jsonData:
         assertTrue(not jsonData or isinstance(jsonData, str))
         assertTrue(not jsonData or not '%' in jsonData, "missing template?", jsonData)
+        jsonData = stripComments(jsonData)
         try:
             json.loads(jsonData)
         except:
@@ -424,7 +510,11 @@ def sendPostAndGetJob(endpoint, jsonData):
     response = sendGet(jobStatus['job_status']['url'])
     checkJobStatusOk(response, 'completed')
     return response['job_status']
-    
+
+def stripComments(s):
+    lines = s.replace('\r\n', '\n').split('\n')
+    lines = jslike.map(lines, lambda line: line.split('###')[0])
+    return '\n'.join(lines)
     
 def checkJobStatusOk(response, expectedStatus):
     assertEq(expectedStatus, response['job_status']['status'])

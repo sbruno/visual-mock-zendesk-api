@@ -130,13 +130,13 @@ export function apiTicketsShowMany(payload) {
 }
 
 
-function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
-    existing = {...existing}
-    if (existing.status == 'closed') {
+function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
+    current = {...current}
+    if (current.status == 'closed') {
         throw new Error('cannot update a closed ticket')
     }
     if (incomingUpdate.subject) {
-        existing.subject = incomingUpdate.subject
+        current.subject = incomingUpdate.subject
     }
     if (incomingUpdate.assignee_email||
         incomingUpdate.group_id||incomingUpdate.organization_id||incomingUpdate.collaborator_ids ||
@@ -146,26 +146,27 @@ function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
 
     /* interestingly we can update these */
     if (incomingUpdate.requester_id) {
-        existing.requester_id = normalizeId(incomingUpdate.requester_id)
+        current.requester_id = normalizeId(incomingUpdate.requester_id)
     }
     if (incomingUpdate.assignee_id) {
-        existing.assignee_id = normalizeId(incomingUpdate.assignee_id)
+        current.assignee_id = normalizeId(incomingUpdate.assignee_id)
     }
 
     if (incomingUpdate.status) {
-        existing.status = incomingUpdate.status
+        current.status = incomingUpdate.status
     }
     if (incomingUpdate.additional_tags) { // less documented, but does work on latest api
         assert(Array.isArray(incomingUpdate.additional_tags), 'additional_tags must be an array')
-        existing.tags = [...incomingUpdate.additional_tags, ...existing.tags]
-        existing.tags = lodash.uniq(existing.tags)
+        current.tags = [...incomingUpdate.additional_tags, ...current.tags]
+        current.tags = lodash.uniq(current.tags)
     }
     if (incomingUpdate.remove_tags) { // less documented, but does work on latest api
         assert(Array.isArray(incomingUpdate.remove_tags), 'remove_tags must be an array')
-        existing.tags = existing.tags.filter(t=>!incomingUpdate.remove_tags.includes(t))
+        current.tags = current.tags.filter(t=>!incomingUpdate.remove_tags.includes(t))
     }
     if (incomingUpdate.tags) {
-        existing.tags = incomingUpdate.tags
+        current.tags = incomingUpdate.tags
+        current.tags = lodash.uniq(current.tags)
     }
     if (incomingUpdate.external_id||incomingUpdate.problem_id||incomingUpdate.due_at||
         incomingUpdate.updated_stamp||incomingUpdate.sharing_agreement_ids||incomingUpdate.macro_ids ||
@@ -175,13 +176,13 @@ function transformIncomingTicketUpdateIntoInternal(existing, incomingUpdate) {
     intCustomFields(incomingUpdate.custom_fields)
     if (incomingUpdate.custom_fields) {
         // confirmed in zendesk api that this merges in, not replaces
-        existing.custom_fields = [...incomingUpdate.custom_fields, ...existing.custom_fields]
-        existing.custom_fields = lodash.uniqBy(existing.custom_fields, fld=>fld.id)
+        current.custom_fields = [...incomingUpdate.custom_fields, ...current.custom_fields]
+        current.custom_fields = lodash.uniqBy(current.custom_fields, fld=>fld.id)
     }
     
     // ignore safe_update for now, would be good to implement in the future for testing race conditions
-    existing.updated_at = getCurrentTimestamp()
-    return existing
+    current.updated_at = getCurrentTimestamp()
+    return current
 }
 
  // Ticket.CreateModel
