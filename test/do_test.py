@@ -4,28 +4,8 @@ import requests
 import json
 import urllib.parse
 
-configText = files.readall('configs.json')
-configs = json.loads(configText)
-assertEq('/mock.zendesk.com', configs['overrideJobStatusUrlPrefix'])
+from do_test_helpers import *
 
-# we support with+without .json suffix on all endpoints,
-# so run tests twice, once with this True, and once with it False 
-doWithJson = True
-
-#~ host = ''
-#~ stateIds = dict(
-    #~ admin = 11007294636571,
-    #~ user1 = 11007294636571,
-    #~ user2 = 11007299217179,
-    #~ user3 = 11007314541595,
-#~ )
-host = f'http://localhost:{configs["portNumber"]}'
-stateIds = dict(
-    admin=111,
-    user1 = None,
-    user2 = None,
-    user3 = None,
-)
 
 
 def go1UsersCreateMany():
@@ -162,7 +142,7 @@ def go4TicketsCreateMany():
         "created_at": "2022-01-01T06:38:32.399Z",
         "requester_id": %USER1%,
         "status": "pending", ### note ids are sometimes quoted, sometimes not, need to support both
-        "custom_fields": [{"id":"345", "value":"fldval1"}, {"id":%FLDID%, "value":"fldval2"}],
+        "custom_fields": [{"id":"%FLDID1%", "value":"fldval1"}, {"id":%FLDID2%, "value":"fldval2"}],
         "tags": ["tag1", "tag2"],
         "comments": [
           {
@@ -190,7 +170,7 @@ def go4TicketsCreateMany():
       {
         "description": "descr3", ### create a ticket with no subject and no requester
         "comment": "plainStringComment2" ### comment syntax shortcut, string data type
-        "tags": ["tag1", "tag2"],
+        "tags": ["tag1", "tag2", "%TAG_REMOVED_BY_TRIGGER%"] # we'll remove it
       },
       {
         "description": "descr4",
@@ -205,7 +185,8 @@ def go4TicketsCreateMany():
       {
         "description": "descr6",
         "requester_id": %USER1%,
-        "comments": [{"body": "testAuthorIdUpdate", "author_id": "%USER2%"}]
+        "comments": [{"body": "testAuthorIdUpdate", "author_id": "%USER2%"}],
+        "tags": ["%TAG_REMOVED_BY_TRIGGER%"] # we won't remove it because we'll add a private comment
       }
     ]
   }
@@ -216,6 +197,7 @@ def go4TicketsCreateMany():
     for i in range(6):
         assertEq(i, result['results'][i]['index'])
         stateIds[f'ticket{i+1}'] = int(result['results'][i]['id'])
+        stateIds[f'lastUpdateTicket{i+1}'] = (result['results'][i]['updated_at'])
         assertEq(True, result['results'][i]['success'])
 
     ############## Confirm inline user got created ###################
@@ -248,9 +230,10 @@ def go5TicketsShowMany():
     assertEq('(no subject given)', result['tickets'][1]['subject'])
 
     ############## Thoroughly check data ###################
-    result = sendGet('/api/v2/tickets/show_many', f'ids={stateIds["ticket1"]},{stateIds["ticket2"]},{stateIds["ticket3"]}')
+    allIds = ','.join(str(stateIds[f'ticket{i}']) for i in range(1,7))
+    result = sendGet('/api/v2/tickets/show_many', f'ids={allIds}')
     assertEq(3, len(result['tickets']))
-    t1, t2, t3 = result['tickets']
+    t1, t2, t3, t4, t5, t6 = result['tickets']
     confirmSet(t1, 'id|created_at|updated_at|description'.split('|'))
     confirmSet(t2, 'id|created_at|updated_at|description'.split('|'))
     confirmSet(t3, 'id|created_at|updated_at|description'.split('|'))
@@ -262,8 +245,8 @@ def go5TicketsShowMany():
     assertEq(stateIds["user1"], t1['requester_id'])
     assertEq(stateIds["user1"], t1['submitter_id'])
     assertEq(stateIds["admin"], t1['assignee_id'])
-    assertEq([], t1['tags'])
-    assertEq([{'id': '345', 'value': 'fldval1'}, {'id': 1900006025624, 'value': 'fldval2'}], t1['custom_fields'])
+    assertEq(["tag1", "tag2"], t1['tags'])
+    assertEq([{'id': subInTemplates('%FLDID1%'), 'value': 'fldval1'}, {'id': subInTemplates('%FLDID2%'), 'value': 'fldval2'}], t1['custom_fields'])
     assertEq([], t1['fields'])
     assertEq(True, t1['is_public'])
     assertEq(2, len(t1['comment_ids']))
@@ -288,11 +271,24 @@ def go5TicketsShowMany():
     assertEq(stateIds["admin"], t3['requester_id'])
     assertEq(stateIds["admin"], t3['submitter_id'])
     assertEq(stateIds["admin"], t3['assignee_id'])
-    assertEq([], t3['tags'])
+    assertEq(["tag1", "tag2", subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t3['tags'])
     assertEq([], t3['custom_fields'])
     assertEq([], t3['fields'])
     assertEq(True, t3['is_public'])
     assertEq(1, len(t3['comment_ids']))
+
+    assertEq(stateIds["ticket6"], t6['id'])
+    assertEq('(no subject given)', t6['subject'])
+    assertEq('(no subject given)', t6['raw_subject'])
+    assertEq('open', t6['status'])
+    assertEq(stateIds["admin"], t6['requester_id'])
+    assertEq(stateIds["admin"], t6['submitter_id'])
+    assertEq(stateIds["admin"], t6['assignee_id'])
+    assertEq([subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t6['tags'])
+    assertEq([], t6['custom_fields'])
+    assertEq([], t6['fields'])
+    assertEq(True, t6['is_public'])
+    assertEq(1, len(t6['comment_ids']))
 
 
 def go6TicketsShowComments():
@@ -385,30 +381,64 @@ def go6TicketsShowComments():
 
 
 def go7TicketsUpdateMany():
-    # change requesterid and assignerid and status
-    # post comment without an author id, where prev comment != requesterid != admin
-    # additionaltags should remove duplicates
-    # removetags should remove duplicates
-    # settags should replace existing and remove duplicates
-
-    # custom fields should merge in changes, not replace
     s = ''' {
     "tickets": [
       {
         "id": %TICKET1%,
-        "status": "pending",
-        "comment": 
-        {
-            "body": "add another",
-            "public": true,
-            "author_id": 111
-        },
-        "custom_fields" : [{"id":123, "value":"addthis"}, {"id":345, "value":"changethis"}]
-      }
+        "status": "resolved", ### will be overridden by trigger
+        "requester_id": %USER2%,
+        "submitter_id": %USER1%,
+        "tags": ["tag2", "tag3", "tag2"], ### replace existing tags, remove dupes 
+        "custom_fields": [{"id": %FLDID3%, "value":"fldval3_b"}, {"id": %FLDID2%, "value":"fldval2_b"}], ### this merges in
+        "comment": {"body": "a %TEXT_NOTICED_BY_TRIGGER% b"} ### comment without an author id, requester is being changed
+        ### trigger openPostWhenPublicCommentContainingTextPosted should fire
+      },
+      {
+        "id": "%TICKET2%", ### support quoted ids
+        "status": "resolved",
+        "additional_tags": ["tag2", "tag3", "tag2"] ### merge existing tags, remove dupes 
+        "custom_fields": [{"id": "%FLDID2%", "value":"new"}], ### setting new flds, and quoted ids should work
+      },
+      {
+        "id": %TICKET3%,
+        "remove_tags": ["tag2", "tag3", "tag2"], ### remove existing tags
+        "comment": {"body": "addedCommentOn3", "author_id":%USER1%} ### comment with an author id
+      },
+      {
+        "id": %TICKET6%,
+        ### adding a private comment, so removeTagWhenPublicCommentPosted trigger should not fire
+        "comment": {"body": "addedCommentOn6", "public": false} ### comment without an author id, where prev comment != requesterid != admin
+      },
     ]
   }
     '''
     s = subInTemplates(s)
+    result = sendPostAndGetJob('/api/v2/imports/tickets/create_many', s)
+    assertEq(4, len(result['results']))
+    assertEq(stateIds[f'ticket1'], result['results'][0]['id'])
+    assertEq(stateIds[f'ticket2'], result['results'][1]['id'])
+    assertEq(stateIds[f'ticket3'], result['results'][2]['id'])
+    assertEq(stateIds[f'ticket6'], result['results'][3]['id'])
+    for i, item in enumerate(result['results']):
+        assertEq(str(i), item['index'])
+        assertEq('update', item['action'])
+        assertEq('Updated', item['status'])
+        assertEq(True, item['success'])
+
+    
+
+    allIds = ','.join(str(stateIds[f'ticket{i}']) for i in range(1,7))
+    afterMods = sendGet('/api/v2/tickets/show_many', f'ids={allIds}')
+    assertEq(6, len(afterMods['tickets']))
+
+    t = afterMods['tickets'][0]
+    print('----')
+    trace(t)
+
+    for i in range(1, 7):
+        assertEq(stateIds[f'ticket{i}'], afterMods['tickets'][i-1]['id'])
+        modded = str(i) in '1,2,3,6'.split(',')
+        assertEq(modded, stateIds[f'lastUpdateTicket{i}'] == afterMods['tickets'][i-1]['updated_at'])
 
 
     # test if defaults to requester or admin
@@ -432,142 +462,6 @@ def go():
     trace('\n\nall tests complete')
 
 
-def confirmSet(obj, flds):
-    for fld in flds:
-        assertTrue(fld in obj, f'field {fld} not present')
-        assertTrue(obj[fld], f'field {fld} is null/None')
-
-def subInTemplates(s):
-    customFlds = configs['customFields']
-    lCustomFlds = list(customFlds.keys())
-    s = s.replace('%FLDID1%', customFlds[lCustomFlds[0]])
-    s = s.replace('%FLDID2%', customFlds[lCustomFlds[1]])
-    s = s.replace('%FLDID3%', customFlds[lCustomFlds[2]])
-    s = s.replace('%USER1%', str(stateIds["user1"]))
-    s = s.replace('%USER2%', str(stateIds["user2"]))
-    s = s.replace('%USER3%', str(stateIds["user3"]))
-    for i in range(6):
-        s = s.replace(f'%TICKET{i+1}%', str(stateIds[f'ticket{i+1}']))
-
-    return s
-
-def quote(s):
-    return urllib.parse.quote(s)
-
-def sendGet(endpoint, encodedQueryString=''):
-    return sendImpl('GET', endpoint, encodedQueryString=encodedQueryString)
-
-def sendPost(endpoint, jsonData):
-    return sendImpl('POST', endpoint, jsonData=jsonData)
-
-def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
-    global configs
-    if not endpoint.endswith('delete_all'):
-        if not doWithJson:
-            if endpoint.endswith('.json'):
-                endpoint = endpoint.replace('.json', '')
-        else:
-            if not endpoint.endswith('.json'):
-                endpoint += '.json'
-    if encodedQueryString:
-        encodedQueryString = '?' + encodedQueryString
-    if endpoint.startswith('http'):
-        fullEndpoint = f'{endpoint}{encodedQueryString}'
-    else:
-        assertTrue(endpoint.startswith('/api'), endpoint)
-        fullEndpoint = f'{host}{endpoint}{encodedQueryString}'
-
-    # would use curl, but want to fail on non-2xx responses
-    # and most distros don't have latest curl with --fail-with-body
-    headers = {}
-    headers['Content-Type'] = 'application/json'
-    headers['Accept'] = 'application/json'
-
-    if jsonData:
-        assertTrue(not jsonData or isinstance(jsonData, str))
-        assertTrue(not jsonData or not '%' in jsonData, "missing template?", jsonData)
-        jsonData = stripComments(jsonData)
-        try:
-            json.loads(jsonData)
-        except:
-            assertTrue(False, 'looks like the json we are about to send does not parse', jsonData)
-
-    r = doRequest(method, fullEndpoint, headers=headers, data=jsonData)
-    if not (r.status_code>=200 and r.status_code<=299):
-        trace('was sending,', method, fullEndpoint, jsonData)
-        if 'x-zendesk-api-warn' in r.headers:
-            trace('x-zendesk-api-warn = ' + r.headers['x-zendesk-api-warn'])
-        trace(f"status_code={r.status_code}")
-        assertTrue(False, f"status_code={r.status_code}", r.text)
-    else:
-        return json.loads(r.text)
-
-
-
-def sendPostAndGetJob(endpoint, jsonData):
-    jobStatus = sendPost(endpoint, jsonData)
-    checkJobStatusOk(jobStatus, 'queued')
-    response = sendGet(jobStatus['job_status']['url'])
-    checkJobStatusOk(response, 'completed')
-    return response['job_status']
-
-def stripComments(s):
-    lines = s.replace('\r\n', '\n').split('\n')
-    lines = jslike.map(lines, lambda line: line.split('###')[0])
-    return '\n'.join(lines)
-    
-def checkJobStatusOk(response, expectedStatus):
-    assertEq(expectedStatus, response['job_status']['status'])
-    theId = response['job_status']['id']
-    assertTrue(configs['overrideJobStatusUrlPrefix'] in response['job_status']['url'])
-    assertTrue(response['job_status']['url'].endswith(f'/api/v2/job_statuses/{theId}.json'))
-    
-    if expectedStatus == 'completed':
-        assertTrue(int(response['job_status']['total']) > 0)
-        assertTrue(int(response['job_status']['progress']) > 0)
-        assertTrue(len(response['job_status']['message']) > 0)
-
-    else:
-        assertTrue((response['job_status']['total']) == None)
-        assertTrue((response['job_status']['progress']) == None)
-        assertTrue((response['job_status']['message']) == None)
-
-def doRequest(method, *args, **kwargs):
-    if method.upper() == 'GET':
-        return requests.get(*args, **kwargs)
-    elif method.upper() == 'PUT':
-        return requests.put(*args, **kwargs)
-    elif method.upper() == 'DELETE':
-        return requests.delete(*args, **kwargs)
-    elif method.upper() == 'POST':
-        return requests.post(*args, **kwargs)
-    else:
-        assertTrue(False, "unknown method")
-
-def doTest1():
-    #~ payload = '{"users":[{"name":"u1", "email":"a@b.com"}]}'
-    payload = ' {"users": [{   "email": "utest1@a.com",   "name": "utest1"},{   "email": "utest2@a.com",   "name": "utest2"}]}'
-    headers = {}
-    headers['Content-Type'] = 'application/json'
-    headers['Accept'] = 'application/json'
-    r = doRequest('post', 'http://localhost:8999/api/v2/users/create_many.json', headers=headers, data=payload)
-    trace('gottt', r.text)
-
-    #~ r5 = sendImpl('post', '/api/v2/users/create_many.json', payload, None)
-    #~ trace(r5)
-    trace('r6')
-    r6 = sendPost('/api/v2/users/create_many.json', payload)
-    trace(r6)
-    checkJobStatusOk(r6, 'queued')
-    trace('r6b', r6['job_status']['url'])
-    response = sendGet(r6['job_status']['url'])
-    trace('r6c', response)
-    checkJobStatusOk(response, 'completed')
-    trace('r6d')
-    
-    trace('r7')
-    output = sendPostAndGetJob('/api/v2/users/create_many.json', payload)
-    trace('r7out', output)
 
 #~ doTest1()
 go()

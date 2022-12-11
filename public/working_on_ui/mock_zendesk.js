@@ -37,6 +37,7 @@ async function onBtnPostReply() {
             }
         }]
     }
+    // because we are calling through this api, this will correctly cause triggers to run
     await callApi('/api/v2/tickets/update_many.json', 'post', payload)
 }
 

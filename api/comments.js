@@ -1,7 +1,6 @@
 import assert from "assert";
 import { getGlobalState } from "../persist.js";
 import { generateCommentId, getCurrentTimestamp, normalizeId } from "./helpers.js";
-import { validateInternalUser } from "./schema.js";
 
 
 export function apiGetTicketComments(ticketId) {

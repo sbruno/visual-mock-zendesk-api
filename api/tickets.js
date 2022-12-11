@@ -176,6 +176,7 @@ function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
     intCustomFields(incomingUpdate.custom_fields)
     if (incomingUpdate.custom_fields) {
         // confirmed in zendesk api that this merges in, not replaces
+        // put it in this order so that incoming vals are prioritized
         current.custom_fields = [...incomingUpdate.custom_fields, ...current.custom_fields]
         current.custom_fields = lodash.uniqBy(current.custom_fields, fld=>fld.id)
     }
