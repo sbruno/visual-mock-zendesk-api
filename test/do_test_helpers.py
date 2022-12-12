@@ -147,6 +147,28 @@ def assertCustomFieldsEq(flds1, flds2):
         return result
     assertEq(fldsToDict(flds1), fldsToDict(flds2))
 
+def testComment(c, authorId, text, public=True):
+    confirmSet(c, 'id|created_at|updated_at'.split('|'))
+    assertEq('Comment', c['type'])
+    assertEq(text, c['body'])
+    assertEq(text, c['html_body'])
+    assertEq(text, c['plain_body'])
+    assertEq(public, c['public'])
+    assertEq(authorId, c['author_id'])
+    assertEq([], c['attachments'])
+
+def testBatchResults(result, action, status, hasSuccess=False):
+    for i, item in enumerate(result['results']):
+        assertEq(i, item['index'])
+        thisAction = action if isinstance(action, str) else action(i)
+        thisStatus = status if isinstance(status, str) else status(i)
+        assertEq(thisAction, item['action'])
+        assertEq(thisStatus, item['status'])
+        assertTrue(int(item['id']) > 0)
+        if hasSuccess:
+            assertEq(True, item['success'])
+
+
 def doRequest(method, *args, **kwargs):
     if method.upper() == 'GET':
         return requests.get(*args, **kwargs)
