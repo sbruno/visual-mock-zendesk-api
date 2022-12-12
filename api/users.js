@@ -7,7 +7,6 @@ import { insertPersistedUser, validateInternalUser } from "./schema.js";
 
 export function apiUsersShowMany(payload) {
     const globalState = getGlobalState()
-    console.log('**'+payload+'**')
     const ids = payload.split(',')
     const result = []
     for (let id of ids) {
@@ -30,7 +29,6 @@ export function apiUsersCreateMany(payload) {
     for (const [index, userInfo] of payload.entries()) {
         const resultUser = transformIncomingUserIntoInternal(globalState, userInfo)
         const alreadyFound = usersSearchByEmailImpl(globalState, resultUser.email)
-        console.log('alreadyfound', JSON.stringify(alreadyFound))
         if (alreadyFound?.users?.length) {
             response.push({"success": true, index: index, id: alreadyFound.users[0].id, "action": "update", "status": "Updated"})
         } else {

@@ -39,14 +39,14 @@ class FilterByTag extends BaseFilter {
                 if (!t?.tags?.length) {
                     return false
                 }
-                return t.tags.any(tag => this.includeThese.includes(tag))
+                return t.tags.some(tag => this.includeThese.includes(tag))
             }
         } else if (this.excludeThese.length) {
             return (t)=>{
                 if (!t?.tags?.length) {
                     return true
                 }
-                return !t.tags.any(tag => this.excludeThese.includes(tag))
+                return !t.tags.some(tag => this.excludeThese.includes(tag))
             }
         } else {
             return (t)=>true
@@ -67,7 +67,6 @@ class FilterCustomField extends BaseFilter {
         if (this.includeThese.length) {
             return (t)=>{
                 const v = getCustomFldVal(t, this.id)
-                console.log('getting ' + v + ' '+t.custom_fields+ ' ' + this.id)
                 return this.includeThese.includes(v)
             }
         } else if (this.excludeThese.length) {
@@ -93,9 +92,12 @@ export function apiSearch(query, sortBy, sortOrder) {
     filters.filterStatus = new FilterStatus()
     filters.filterTag = new FilterByTag()
     const addCustomFieldFilter = (s, isExclude) => {
+        if (!s.includes(':')) {
+            throw new Error('Expected custom_id_12345:abc, got ' + s)
+        }
+
         const id = s.split(':')[0]
         const val = s.split(':')[1]
-        console.log(`makin new ${id}|${val}|${isExclude}`)
         if (!filters[id]) {
             filters[id] = new FilterCustomField(id)
         }
@@ -114,16 +116,16 @@ export function apiSearch(query, sortBy, sortOrder) {
             console.log('updated clause is currently ignored.')
         } else if (part.startsWith('status:')) {
             const s = part.slice('status:'.length)
-            filterStatus.includeThese.push(s)
+            filters.filterStatus.includeThese.push(s)
         } else if (part.startsWith('-status:')) {
             const s = part.slice('-status:'.length)
-            filterStatus.excludeThese.push(s)
+            filters.filterStatus.excludeThese.push(s)
         } else if (part.startsWith('tags:')) {
             const s = part.slice('tags:'.length)
-            filterTag.includeThese.push(s)
+            filters.filterTag.includeThese.push(s)
         } else if (part.startsWith('-tags:')) {
             const s = part.slice('-tags:'.length)
-            filterTag.excludeThese.push(s)
+            filters.filterTag.excludeThese.push(s)
         } else if (part.startsWith('custom_field_')) {
             const s = part.slice('custom_field_'.length)
             addCustomFieldFilter(s, false)
@@ -140,7 +142,6 @@ export function apiSearch(query, sortBy, sortOrder) {
             let filter = filters[key]
            const filterFn = filter.getFilter()
            if (!filterFn(t)) {
-            console.log(`filter-- ${key} ${t.description}`)
             return false
            }
         }
@@ -149,7 +150,7 @@ export function apiSearch(query, sortBy, sortOrder) {
     })
 
     results = lodash.sortBy(results, sortBy)
-    if (sortOrder == 'desc') {
+    if (sortOrder === 'desc') {
         results.reverse()
     }
 

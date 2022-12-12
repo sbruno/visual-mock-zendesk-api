@@ -107,7 +107,11 @@ export function apiRoutes(app) {
 
       register('get', '/api/v2/search', (req, res) => {
         wrapHandler(()=> {
-            const result = apiSearch(req.query.query, req.query.sort_by, req.query.created_at)
+            if (!req.query.query) {
+                throw new Error('must provide a query ' + JSON.stringify(req.query))
+            }
+            
+            const result = apiSearch(req.query.query, req.query.sort_by, req.query.sort_order)
             res.send(result)
         }, req, res)
     })

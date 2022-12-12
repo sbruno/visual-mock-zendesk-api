@@ -33,7 +33,7 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
         } else {
             const resultUser = transformIncomingUserIntoInternal(globalState, {name: nm, email:em})
             insertPersistedUser(globalState, resultUser)
-            console.log(`created inline User`)
+            console.log(`Created an inline User.`)
             obj[keyId] = resultUser.id
         }
     }

@@ -479,6 +479,7 @@ def go8Search():
     "tickets": [
       {
         ### create ticket: open/no tag/no fld1/no fld2/fld3=target = isThere 
+        "created_at": "2022-04-01T06:38:32.399Z",
         "subject": "t1",
         "description": "t1",
         "status": "open",
@@ -490,6 +491,7 @@ def go8Search():
       },
       {
         ### create ticket: no conditions match = filtered out  
+        "created_at": "2022-04-02T06:38:32.399Z",
         "subject": "t2",
         "description": "t2",
         "status": "closed",
@@ -503,6 +505,7 @@ def go8Search():
       },
       {
         ### create ticket: closed(wrong)/no tag/fld1=different/fld2=different/fld3=target = filtered out 
+        "created_at": "2022-04-03T06:38:32.399Z",
         "subject": "t3",
         "description": "t3",
         "status": "closed",
@@ -511,11 +514,12 @@ def go8Search():
             {"id":%FLDID2%, "value":"differentVal2"},
             {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
         ],
-        "tags": ["tag1", "tag2"],
+        "tags": ["searchTag1", "searchTag2"],
         "comment": {"body": "t3"}
       },
       {
         ### create ticket: open/tag(wrong)/fld1=different/fld2=different/fld3=target = filtered out  
+        "created_at": "2022-04-04T06:38:32.399Z",
         "subject": "t4",
         "description": "t4",
         "status": "open",
@@ -524,11 +528,12 @@ def go8Search():
             {"id":%FLDID2%, "value":"differentVal2"},
             {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
         ],
-        "tags": ["tag1", "tag2", "%TAG_REMOVED_BY_TRIGGER%"],
+        "tags": ["searchTag1", "searchTag2", "%TAG_REMOVED_BY_TRIGGER%"],
         "comment": {"body": "t4"}
       },
       {
         ### create ticket: open/no tag/fld1=skip/fld2=different/fld3=target = filtered out  
+        "created_at": "2022-04-05T06:38:32.399Z",
         "subject": "t5",
         "description": "t5",
         "status": "open",
@@ -537,11 +542,12 @@ def go8Search():
             {"id":%FLDID2%, "value":"differentVal2"},
             {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
         ],
-        "tags": ["tag1", "tag2"],
+        "tags": ["searchTag1", "searchTag2"],
         "comment": {"body": "t5"}
       },
       {
         ### create ticket: open/no tag/fld1=different/fld2=skip/fld3=target = filtered out  
+        "created_at": "2022-04-06T06:38:32.399Z",
         "subject": "t6",
         "description": "t6",
         "status": "open",
@@ -550,11 +556,12 @@ def go8Search():
             {"id":%FLDID2%, "value":"skipTicketsWhereFld2SaysThis"},
             {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
         ],
-        "tags": ["tag1", "tag2"],
+        "tags": ["searchTag1", "searchTag2"],
         "comment": {"body": "t6"}
       },
       {
         ### create ticket: open/no tag/fld1=different/fld2=different/fld3=other(wrong) = filtered out  
+        "created_at": "2022-04-07T06:38:32.399Z",
         "subject": "t7",
         "description": "t7",
         "status": "open",
@@ -563,7 +570,7 @@ def go8Search():
             {"id":%FLDID2%, "value":"differentVal2"},
             {"id":%FLDID3%, "value":"notTheLookedForValue"}
         ],
-        "tags": ["tag1", "tag2"],
+        "tags": ["searchTag1", "searchTag2"],
         "comment": {"body": "t7"}
       }
     ]
@@ -576,13 +583,11 @@ def go8Search():
         stateIds[f'ticketTestSearch{i+1}'] = int(result['results'][i]['id'])
         assertEq(True, result['results'][i]['success'])
     
-    # give this ticket a larger created at
-    import time
-    time.sleep(1)
     s = r'''{
     "tickets": [
      {
         ### create ticket: open/no tag/fld1=different/fld2=different/fld3=target = isThere 
+        "created_at": "2022-04-08T06:38:32.399Z",
         "subject": "t8",
         "description": "t8",
         "status": "open",
@@ -591,7 +596,7 @@ def go8Search():
             {"id":%FLDID2%, "value":"differentVal2"},
             {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
         ],
-        "tags": ["tag1"],
+        "tags": ["searchTag1"],
         "comment": {"body": "t8"}
       }
     ]
@@ -611,11 +616,10 @@ def go8Search():
     assertEq(2, result['count'])
     assertEq(stateIds['ticketTestSearch2'], result['results'][0]['id'])
     assertEq(stateIds['ticketTestSearch7'], result['results'][1]['id'])
-    return
     
     ####### tags search ################
-    clauses = [f'tags:tag1', f'tags:tag2']
-    q = quote(subInTemplates(f'query={" ".join(clauses)}&sort_by=created_at&sort_order=asc'))
+    clauses = [f'tags:searchTag1', f'tags:searchTag2']
+    q = f'query=' + quote(subInTemplates(" ".join(clauses))) + '&sort_by=created_at&sort_order=asc'
     result = sendGet('/api/v2/search', q)
     assertEq(6, result['count'])
     assertEq(stateIds['ticketTestSearch3'], result['results'][0]['id'])
@@ -632,7 +636,7 @@ def go8Search():
         '-custom_field_%FLDID2%:skipTicketsWhereFld2SaysThis', 
         'custom_field_%FLDID3%:includeTicketsWhereFld3SaysThis', 
         ]
-    q = quote(subInTemplates(f'query={" ".join(clauses)}&sort_by=created_at&sort_order=desc'))
+    q = f'query=' + quote(subInTemplates(" ".join(clauses))) + '&sort_by=created_at&sort_order=desc'
     result = sendGet('/api/v2/search', q)
     assertEq(2, result['count'])
     assertEq(stateIds['ticketTestSearch8'], result['results'][0]['id'])
