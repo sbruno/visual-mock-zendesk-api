@@ -21,7 +21,7 @@ export function renderCustomFields(ticket) {
 }
 
 export function getCustomFldVal(ticket, id) {
-    if (ticket?.custom_fields?.length) {
+    if (!ticket?.custom_fields) {
         return undefined
     }
     for (let fld of ticket.custom_fields) {

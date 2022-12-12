@@ -56,6 +56,7 @@ class FilterByTag extends BaseFilter {
 
 class FilterCustomField extends BaseFilter {
     constructor(id) {
+        super()
         this.id = normalizeId(id)
     }
     getFilter() {
@@ -66,6 +67,7 @@ class FilterCustomField extends BaseFilter {
         if (this.includeThese.length) {
             return (t)=>{
                 const v = getCustomFldVal(t, this.id)
+                console.log('getting ' + v + ' '+t.custom_fields+ ' ' + this.id)
                 return this.includeThese.includes(v)
             }
         } else if (this.excludeThese.length) {
@@ -83,6 +85,9 @@ export function apiSearch(query, sortBy, sortOrder) {
     const globalState = getGlobalState()
     sortBy = sortBy || 'created_at'
     sortOrder = sortOrder || 'asc'
+    if (query.includes('%20')) {
+        throw new Error('still escaped?', query)
+    }
     const queryParts = query.split(' ')
     const filters = {}
     filters.filterStatus = new FilterStatus()
@@ -90,6 +95,7 @@ export function apiSearch(query, sortBy, sortOrder) {
     const addCustomFieldFilter = (s, isExclude) => {
         const id = s.split(':')[0]
         const val = s.split(':')[1]
+        console.log(`makin new ${id}|${val}|${isExclude}`)
         if (!filters[id]) {
             filters[id] = new FilterCustomField(id)
         }
@@ -128,13 +134,17 @@ export function apiSearch(query, sortBy, sortOrder) {
     }
 
     let results = Object.values(globalState.persistedState.tickets)
+    results = lodash.sortBy(results, 'created_at')
     results = results.filter(t=> {
-        for (let filter of Object.values(filters)) {
+        for (let key of Object.keys(filters)) {
+            let filter = filters[key]
            const filterFn = filter.getFilter()
            if (!filterFn(t)) {
+            console.log(`filter-- ${key} ${t.description}`)
             return false
            }
         }
+
         return true
     })
 

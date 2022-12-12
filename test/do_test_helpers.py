@@ -83,6 +83,7 @@ def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
         assertTrue(endpoint.startswith('/api'), endpoint)
         fullEndpoint = f'{host}{endpoint}{encodedQueryString}'
 
+    trace('fullEndpoint ' + fullEndpoint)
     # would use curl, but want to fail on non-2xx responses
     # and most distros don't have latest curl with --fail-with-body
     headers = {}
