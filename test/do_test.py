@@ -157,7 +157,6 @@ def go4TicketsCreateMany():
         "description": "descr4",
         "requester_id": %USER2%,
         "submitter_id": %USER3%,
-        "tags": ["tag1", "tag2"],
         "comments": [{"body": "testAuthorId1"}]
       },
       {
@@ -228,7 +227,7 @@ def go5TicketsShowMany():
     assertEq(stateIds["user1"], t1['requester_id'])
     assertEq(stateIds["user1"], t1['submitter_id'])
     assertEq(stateIds["admin"], t1['assignee_id'])
-    assertEq(["tag1", "tag2"], t1['tags'])
+    assertTagsEq(["tag1", "tag2"], t1['tags'])
     assertCustomFieldsEq(expectedCustomFlds,  t1['custom_fields'])
     assertEq([], t1['fields'])
     assertEq(True, t1['is_public'])
@@ -241,7 +240,7 @@ def go5TicketsShowMany():
     assertEq(stateIds["user4inline"], t2['requester_id'])
     assertEq(stateIds["user4inline"], t2['submitter_id'])
     assertEq(stateIds["admin"], t2['assignee_id'])
-    assertEq(["tag1", "tag2"], t2['tags'])
+    assertTagsEq(["tag1", "tag2"], t2['tags'])
     assertEq([], t2['custom_fields'])
     assertEq([], t2['fields'])
     assertEq(True, t2['is_public'])
@@ -254,24 +253,11 @@ def go5TicketsShowMany():
     assertEq(stateIds["admin"], t3['requester_id'])
     assertEq(stateIds["admin"], t3['submitter_id'])
     assertEq(stateIds["admin"], t3['assignee_id'])
-    assertEq(["tag1", "tag2", subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t3['tags'])
+    assertTagsEq(["tag1", "tag2", subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t3['tags'])
     assertEq([], t3['custom_fields'])
     assertEq([], t3['fields'])
     assertEq(True, t3['is_public'])
     assertEq(1, len(t3['comment_ids']))
-
-    assertEq(stateIds["ticket4"], t4['id'])
-    assertEq('(no subject given)', t4['subject'])
-    assertEq('(no subject given)', t4['raw_subject'])
-    assertEq('open', t4['status'])
-    assertEq(stateIds["admin"], t4['requester_id'])
-    assertEq(stateIds["admin"], t4['submitter_id'])
-    assertEq(stateIds["admin"], t4['assignee_id'])
-    assertEq(["tag1", "tag2"], t4['tags'])
-    assertEq([], t4['custom_fields'])
-    assertEq([], t4['fields'])
-    assertEq(True, t4['is_public'])
-    assertEq(0, len(t4['comment_ids']))
 
     assertEq(stateIds["ticket6"], t6['id'])
     assertEq('(no subject given)', t6['subject'])
@@ -280,7 +266,7 @@ def go5TicketsShowMany():
     assertEq(stateIds["user1"], t6['requester_id'])
     assertEq(stateIds["user1"], t6['submitter_id'])
     assertEq(stateIds["admin"], t6['assignee_id'])
-    assertEq([subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t6['tags'])
+    assertTagsEq([subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t6['tags'])
     assertEq([], t6['custom_fields'])
     assertEq([], t6['fields'])
     assertEq(True, t6['is_public'])
@@ -417,7 +403,7 @@ def go7TicketsUpdateMany():
     assertEq(stateIds["user2"], t1['requester_id'])
     assertEq(stateIds["user1"], t1['submitter_id'])
     assertEq(stateIds["admin"], t1['assignee_id'])
-    assertEq(["tag2", "tag3"], t1['tags']) # tags were modified
+    assertTagsEq(["tag2", "tag3"], t1['tags']) # tags were modified
     expectedCustomFlds = [{'id': int(subInTemplates('%FLDID1%')), 'value': 'fldval1'}, 
         {'id': int(subInTemplates('%FLDID2%')), 'value': 'fldval2_b'}, 
         {'id': int(subInTemplates('%FLDID3%')), 'value': 'fldval3_b'}]
@@ -426,11 +412,11 @@ def go7TicketsUpdateMany():
     assertEq([], t1['fields'])
     assertEq(True, t1['is_public'])
     assertEq(3, len(t1['comment_ids']))
-    comments1 = sendGet(f'/api/v2/tickets/{t1["id"]}/comments')
+    comments1 = sendGet(f'/api/v2/tickets/{t1["id"]}/comments')['comments']
     assertEq(3, len(comments1))
     testComment(comments1[0], authorId=stateIds['user2'], text='comment1', public=False)
     testComment(comments1[1], authorId=stateIds['user1'], text='comment2')
-    testComment(comments1[2], authorId=stateIds['user1'], text=subInTemplates('a %TEXT_NOTICED_BY_TRIGGER% b'))
+    testComment(comments1[2], authorId=stateIds['user2'], text=subInTemplates('a %TEXT_NOTICED_BY_TRIGGER% b'))
 
     ### test ticket 2
     assertEq(stateIds["ticket2"], t2['id'])
@@ -440,14 +426,14 @@ def go7TicketsUpdateMany():
     assertEq(stateIds["user4inline"], t2['requester_id'])
     assertEq(stateIds["user4inline"], t2['submitter_id'])
     assertEq(stateIds["admin"], t2['assignee_id'])
-    assertEq(["tag1", "tag2", "tag3"], t2['tags'])
+    assertTagsEq(["tag1", "tag2", "tag3"], t2['tags'])
     expectedCustomFlds =  [{'id': int(subInTemplates('%FLDID2%')), 'value': 'new'}]
     assertCustomFieldsEq(expectedCustomFlds, 
         t2['custom_fields'])
     assertEq([], t2['fields'])
     assertEq(True, t2['is_public'])
     assertEq(1, len(t2['comment_ids']))
-    comments2 = sendGet(f'/api/v2/tickets/{t2["id"]}/comments')
+    comments2 = sendGet(f'/api/v2/tickets/{t2["id"]}/comments')['comments']
     assertEq(1, len(comments2))
     testComment(comments2[0], authorId=stateIds['user4inline'], text='plainStringComment1')
 
@@ -459,12 +445,12 @@ def go7TicketsUpdateMany():
     assertEq(stateIds["admin"], t3['requester_id'])
     assertEq(stateIds["admin"], t3['submitter_id'])
     assertEq(stateIds["admin"], t3['assignee_id'])
-    assertEq(["tag1", "tag2", subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t3['tags'])
+    assertTagsEq(["tag1"], t3['tags']) # removed by remove_tags and by trigger
     assertEq([], t3['custom_fields'])
     assertEq([], t3['fields'])
     assertEq(True, t3['is_public'])
     assertEq(2, len(t3['comment_ids']))
-    comments3 = sendGet(f'/api/v2/tickets/{t2["id"]}/comments')
+    comments3 = sendGet(f'/api/v2/tickets/{t3["id"]}/comments')['comments']
     assertEq(2, len(comments3))
     testComment(comments3[0], authorId=stateIds['admin'], text='plainStringComment2')
     testComment(comments3[1], authorId=stateIds['user1'], text='addedCommentOn3')
@@ -477,20 +463,178 @@ def go7TicketsUpdateMany():
     assertEq(stateIds["user1"], t6['requester_id'])
     assertEq(stateIds["user1"], t6['submitter_id'])
     assertEq(stateIds["admin"], t6['assignee_id'])
-    assertEq([subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t6['tags'])
+    assertTagsEq([subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t6['tags']) # trigger won't fire because it's a private post
     assertEq([], t6['custom_fields'])
     assertEq([], t6['fields'])
     assertEq(True, t6['is_public'])
-    assertEq(1, len(t6['comment_ids']))
-    comments6 = sendGet(f'/api/v2/tickets/{t2["id"]}/comments')
-    testComment(comments6[0], authorId=stateIds['admin'], text='plainStringComment2')
-
-    return
+    assertEq(2, len(t6['comment_ids']))
+    comments6 = sendGet(f'/api/v2/tickets/{t6["id"]}/comments')['comments']
+    assertEq(2, len(comments6))
+    testComment(comments6[0], authorId=stateIds['user2'], text='testAuthorIdUpdate')
+    testComment(comments6[1], authorId=stateIds['user1'], text='addedCommentOn6', public=False)
     
 
 def go8Search():
-    pass
+    s = r'''{
+    "tickets": [
+      {
+        ### create ticket: open/no tag/no fld1/no fld2/fld3=target = isThere 
+        "subject": "t1",
+        "description": "t1",
+        "status": "open",
+        "custom_fields": [
+            {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
+        ],
+        "tags": [],
+        "comment": {"body": "t1"}
+      },
+      {
+        ### create ticket: no conditions match = filtered out  
+        "subject": "t2",
+        "description": "t2",
+        "status": "closed",
+        "custom_fields": [
+            {"id":%FLDID1%, "value":"skipTicketsWhereFld1SaysThis"},
+            {"id":%FLDID2%, "value":"skipTicketsWhereFld2SaysThis"},
+            {"id":%FLDID3%, "value":"notTheLookedForValue"}
+        ],
+        "tags": ["%TAG_REMOVED_BY_TRIGGER%"],
+        "comment": {"body": "t2"}
+      },
+      {
+        ### create ticket: closed(wrong)/no tag/fld1=different/fld2=different/fld3=target = filtered out 
+        "subject": "t3",
+        "description": "t3",
+        "status": "closed",
+        "custom_fields": [
+            {"id":%FLDID1%, "value":"differentVal1"},
+            {"id":%FLDID2%, "value":"differentVal2"},
+            {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
+        ],
+        "tags": ["tag1", "tag2"],
+        "comment": {"body": "t3"}
+      },
+      {
+        ### create ticket: open/tag(wrong)/fld1=different/fld2=different/fld3=target = filtered out  
+        "subject": "t4",
+        "description": "t4",
+        "status": "open",
+        "custom_fields": [
+            {"id":%FLDID1%, "value":"differentVal1"},
+            {"id":%FLDID2%, "value":"differentVal2"},
+            {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
+        ],
+        "tags": ["tag1", "tag2", "%TAG_REMOVED_BY_TRIGGER%"],
+        "comment": {"body": "t4"}
+      },
+      {
+        ### create ticket: open/no tag/fld1=skip/fld2=different/fld3=target = filtered out  
+        "subject": "t5",
+        "description": "t5",
+        "status": "open",
+        "custom_fields": [
+            {"id":%FLDID1%, "value":"skipTicketsWhereFld1SaysThis"},
+            {"id":%FLDID2%, "value":"differentVal2"},
+            {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
+        ],
+        "tags": ["tag1", "tag2"],
+        "comment": {"body": "t5"}
+      },
+      {
+        ### create ticket: open/no tag/fld1=different/fld2=skip/fld3=target = filtered out  
+        "subject": "t6",
+        "description": "t6",
+        "status": "open",
+        "custom_fields": [
+            {"id":%FLDID1%, "value":"differentVal1"},
+            {"id":%FLDID2%, "value":"skipTicketsWhereFld2SaysThis"},
+            {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
+        ],
+        "tags": ["tag1", "tag2"],
+        "comment": {"body": "t6"}
+      },
+      {
+        ### create ticket: open/no tag/fld1=different/fld2=different/fld3=other(wrong) = filtered out  
+        "subject": "t7",
+        "description": "t7",
+        "status": "open",
+        "custom_fields": [
+            {"id":%FLDID1%, "value":"differentVal1"},
+            {"id":%FLDID2%, "value":"differentVal2"},
+            {"id":%FLDID3%, "value":"notTheLookedForValue"}
+        ],
+        "tags": ["tag1", "tag2"],
+        "comment": {"body": "t7"}
+      }
+    ]'''
+    s = subInTemplates(s)
+    result = sendPostAndGetJob('/api/v2/imports/tickets/create_many', s)
+    assertEq(6, len(result['results']))
+    for i in range(6):
+        assertEq(i, result['results'][i]['index'])
+        stateIds[f'ticketTestSearch{i+1}'] = int(result['results'][i]['id'])
+        assertEq(True, result['results'][i]['success'])
+    
+    # give this ticket a larger created at
+    import time
+    time.sleep(1)
+    s = r'''{
+    "tickets": [
+     {
+        ### create ticket: open/no tag/fld1=different/fld2=different/fld3=target = isThere 
+        "subject": "t8",
+        "description": "t8",
+        "status": "open",
+        "custom_fields": [
+            {"id":%FLDID1%, "value":"differentVal1"},
+            {"id":%FLDID2%, "value":"differentVal2"},
+            {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
+        ],
+        "tags": ["tag1"],
+        "comment": {"body": "t8"}
+      }
+        ]
+        }'''
+    s = subInTemplates(s)
+    result = sendPostAndGetJob('/api/v2/imports/tickets/create_many', s)
+    assertEq(1, len(result['results']))
+    for i in range(1):
+        assertEq(i, result['results'][i]['index'])
+        stateIds[f'ticketTestSearch8'] = int(result['results'][i]['id'])
+        assertEq(True, result['results'][i]['success'])
 
+    ####### simple search ################
+    clauses = [f'custom_field_%FLDID3%:notTheLookedForValue']
+    q = quote(subInTemplates(f'query={" ".join(clauses)}&sort_by=created_at&sort_order=asc'))
+    result = sendGet('/api/v2/search', q)
+    assertEq(2, result['count'])
+    assertEq(stateIds['ticketTestSearch2'], result['results'][0]['id'])
+    assertEq(stateIds['ticketTestSearch7'], result['results'][1]['id'])
+    
+    ####### tags search ################
+    clauses = [f'tags:tag1', f'tags:tag2']
+    q = quote(subInTemplates(f'query={" ".join(clauses)}&sort_by=created_at&sort_order=asc'))
+    result = sendGet('/api/v2/search', q)
+    assertEq(6, result['count'])
+    assertEq(stateIds['ticketTestSearch3'], result['results'][0]['id'])
+    assertEq(stateIds['ticketTestSearch4'], result['results'][1]['id'])
+    assertEq(stateIds['ticketTestSearch5'], result['results'][2]['id'])
+    assertEq(stateIds['ticketTestSearch6'], result['results'][3]['id'])
+    assertEq(stateIds['ticketTestSearch7'], result['results'][4]['id'])
+    assertEq(stateIds['ticketTestSearch8'], result['results'][5]['id'])
+    
+    ####### complex search ################
+    clauses = ['-status:closed', 
+        '-tags:%TAG_REMOVED_BY_TRIGGER%', 
+        '-custom_field_%FLDID1%:skipTicketsWhereFld1SaysThis', 
+        '-custom_field_%FLDID2%:skipTicketsWhereFld2SaysThis', 
+        'custom_field_%FLDID3%:includeTicketsWhereFld3SaysThis', 
+        ]
+    q = quote(subInTemplates(f'query={" ".join(clauses)}&sort_by=created_at&sort_order=desc'))
+    result = sendGet('/api/v2/search', q)
+    assertEq(2, result['count'])
+    assertEq(stateIds['ticketTestSearch8'], result['results'][0]['id'])
+    assertEq(stateIds['ticketTestSearch1'], result['results'][1]['id'])
 
 
 def go():

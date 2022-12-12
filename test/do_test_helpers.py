@@ -138,6 +138,9 @@ def checkJobStatusOk(response, expectedStatus):
         assertTrue((response['job_status']['progress']) == None)
         assertTrue((response['job_status']['message']) == None)
 
+def assertTagsEq(tags1, tags2):
+    assertEq(sorted(tags1), sorted(tags2))
+
 def assertCustomFieldsEq(flds1, flds2):
     assertEq(len(flds1), len(flds2))
     def fldsToDict(f):

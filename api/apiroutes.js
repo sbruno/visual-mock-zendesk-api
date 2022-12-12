@@ -24,7 +24,30 @@ import { apiUsersSearchByEmail, apiUsersCreateMany, apiUsersShowMany } from "./u
             see json in the ./test directory
             curl -d '@./test/curl_update.json' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/tickets/update_many.json'
         8 uri: `/api/v2/search`
-            curl 'http://localhost:8999/api/v2/search.json?query=type:ticket%20-status:closed%20updated%3E2021-11-02%20-tags:tag-to-replace-has-processed%20-custom_field_1260826564690:%22skipThisTicket%22%20-custom_field_1900006024804:%22FromEmail%22&sort_by=created_at&sort_order=desc'
+            curl 'http://localhost:8999/api/v2/search.json?query=type:ticket%20-status:closed%20updated%3E2021-11-02%20-tags:lv-has-processed%20-custom_field_1260826564690:%22skipThisTicket%22%20-custom_field_1900006024804:%22FromEmail%22&sort_by=created_at&sort_order=desc'
+            -status:closed
+            - -tags:lv-has-processed
+            -custom_field_1260826564690:%22skipThisTicket%22
+            -custom_field_1900006024804:%22FromEmail%22
+            - &sort_by=created_at&sort_order=desc'
+            - fld3 = wantThis
+              
+              -status:closed
+              -tags:TAG_REMOVED_BY_TRIGGER
+              -custom_field_1:skipTicketsWhereFld1SaysThis
+              -custom_field_2:skipTicketsWhereFld2SaysThis
+              custom_field_3:includeTicketsWhereFld3SaysThis
+              
+              
+            
+            wait 1 second
+            create ticket: 
+            create ticket: closed/no lv-has/fld1=different/fld2=different/fld3=target = filtered out 
+            create ticket: open/lv-has/fld1=different/fld2=different/fld3=target = filtered out 
+            create ticket: open/no-lv-has/fld1=target/fld2=different/fld3=target = filtered out 
+            create ticket: open/no-lv-has/fld1=different/fld2=target/fld3=target = filtered out 
+            create ticket: open/no-lv-has/fld1=different/fld2=different/fld3=missing = filtered out 
+            
 */
 
 export function apiRoutes(app) {

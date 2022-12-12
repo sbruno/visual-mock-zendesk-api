@@ -1,6 +1,8 @@
 import { errNotImplemented } from "./apiroutes.js"
 import lodash from 'lodash'
 import { getGlobalState } from "../persist.js"
+import { normalizeId } from "./helpers.js"
+import { getCustomFldVal } from "./customfields.js"
 
 class BaseFilter {
     includeThese = []
@@ -13,7 +15,7 @@ class BaseFilter {
 class FilterStatus extends BaseFilter {
     getFilter() {
         if (this.includeThese.length && this.excludeThese.length) {
-            throw new Error(`FilterStatus cannot have both include and exclude`)
+            throw errNotImplemented(`FilterStatus cannot have both include and exclude`)
         }
 
         if (this.includeThese.length) {
@@ -29,11 +31,16 @@ class FilterStatus extends BaseFilter {
 class FilterByTag extends BaseFilter {
     getFilter() {
         if (this.includeThese.length && this.excludeThese.length) {
-            throw new Error(`FilterByTag cannot have both include and exclude`)
+            throw errNotImplemented(`FilterByTag cannot have both include and exclude`)
         }
 
         if (this.includeThese.length) {
-            throw new Error('not yet supported')
+            return (t)=>{
+                if (!t?.tags?.length) {
+                    return false
+                }
+                return t.tags.any(tag => this.includeThese.includes(tag))
+            }
         } else if (this.excludeThese.length) {
             return (t)=>{
                 if (!t?.tags?.length) {
@@ -48,15 +55,24 @@ class FilterByTag extends BaseFilter {
 }
 
 class FilterCustomField extends BaseFilter {
+    constructor(id) {
+        this.id = normalizeId(id)
+    }
     getFilter() {
         if (this.includeThese.length && this.excludeThese.length) {
-            throw new Error(`FilterCustomField cannot have both include and exclude`)
+            throw errNotImplemented(`FilterCustomField ${this.id} cannot have both include and exclude`)
         }
 
         if (this.includeThese.length) {
-            return (t)=>this.includeThese.includes(t.status)
+            return (t)=>{
+                const v = getCustomFldVal(t, this.id)
+                return this.includeThese.includes(v)
+            }
         } else if (this.excludeThese.length) {
-            return (t)=>!this.excludeThese.includes(t.status)
+            return (t)=>{
+                const v = getCustomFldVal(t, this.id)
+                return !this.excludeThese.includes(v)
+            }
         } else {
             return (t)=>true
         }
@@ -68,19 +84,28 @@ export function apiSearch(query, sortBy, sortOrder) {
     sortBy = sortBy || 'created_at'
     sortOrder = sortOrder || 'asc'
     const queryParts = query.split(' ')
-    const filterStatus = new FilterStatus()
-    const filterTag = new FilterByTag()
-    const filterCustomField = new FilterCustomField()
+    const filters = {}
+    filters.filterStatus = new FilterStatus()
+    filters.filterTag = new FilterByTag()
+    const addCustomFieldFilter = (s, isExclude) => {
+        const id = s.split(':')[0]
+        const val = s.split(':')[1]
+        if (!filters[id]) {
+            filters[id] = new FilterCustomField(id)
+        }
+        if (isExclude) {
+            filters[id].excludeThese.push(val)
+        } else {
+            filters[id].includeThese.push(val)
+        }
+    }
+    
     for (let part of queryParts) {
         part = part.trim()
         if (!part) {
             continue
         } else if (part.startsWith('updated')) {
-            if (part === 'updated>2021-11-02') {
-                continue
-            } else {
-                throw errNotImplemented('only supported clause is updated>2021-11-02')
-            }
+            console.log('updated clause is currently ignored.')
         } else if (part.startsWith('status:')) {
             const s = part.slice('status:'.length)
             filterStatus.includeThese.push(s)
@@ -95,17 +120,23 @@ export function apiSearch(query, sortBy, sortOrder) {
             filterTag.excludeThese.push(s)
         } else if (part.startsWith('custom_field_')) {
             const s = part.slice('custom_field_'.length)
-            filterCustomField.includeThese.push(s)
+            addCustomFieldFilter(s, false)
         } else if (part.startsWith('-custom_field_')) {
             const s = part.slice('-custom_field_'.length)
-            filterCustomField.excludeThese.push(s)
+            addCustomFieldFilter(s, true)
         } 
     }
 
     let results = Object.values(globalState.persistedState.tickets)
-    results = results.filter(filterStatus.getFilter())
-    results = results.filter(filterTag.getFilter())
-    results = results.filter(filterCustomField.getFilter())
+    results = results.filter(t=> {
+        for (let filter of Object.values(filters)) {
+           const filterFn = filter.getFilter()
+           if (!filterFn(t)) {
+            return false
+           }
+        }
+        return true
+    })
 
     results = lodash.sortBy(results, sortBy)
     if (sortOrder == 'desc') {
@@ -113,6 +144,7 @@ export function apiSearch(query, sortBy, sortOrder) {
     }
 
     return {
+        count: results.length,
         results: results
     }
 }

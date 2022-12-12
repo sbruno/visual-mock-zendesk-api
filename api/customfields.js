@@ -20,6 +20,18 @@ export function renderCustomFields(ticket) {
     return arr.join('\n')
 }
 
+export function getCustomFldVal(ticket, id) {
+    if (ticket?.custom_fields?.length) {
+        return undefined
+    }
+    for (let fld of ticket.custom_fields) {
+        if (parseInt(fld.id) === id) {
+            return fld.value
+        }
+    }
+    return undefined
+}
+
 export function intCustomFields(custom_fields) {
     if (custom_fields) {
         for (let fld of custom_fields) {
