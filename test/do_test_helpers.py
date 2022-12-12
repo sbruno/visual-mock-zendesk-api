@@ -44,7 +44,7 @@ def subInTemplates(s):
     s = s.replace('%USER2%', str(stateIds["user2"]))
     s = s.replace('%USER3%', str(stateIds["user3"]))
     for i in range(6):
-        s = s.replace(f'%TICKET{i+1}%', str(stateIds[f'ticket{i+1}']))
+        s = s.replace(f'%TICKET{i+1}%', str(stateIds.get(f'ticket{i+1}', '')))
 
     for obj in configs['customTriggers']:
         if obj['action']=='removeTagWhenPublicCommentPosted':
@@ -90,8 +90,8 @@ def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
     headers['Accept'] = 'application/json'
 
     if jsonData:
-        assertTrue(not jsonData or isinstance(jsonData, str))
-        assertTrue(not jsonData or not '%' in jsonData, "missing template?", jsonData.split('%')[1])
+        assertTrue(isinstance(jsonData, str))
+        assertTrue(not '%' in jsonData, "missing template?", jsonData.split('%')[-1])
         jsonData = stripComments(jsonData)
         try:
             json.loads(jsonData)
@@ -137,6 +137,15 @@ def checkJobStatusOk(response, expectedStatus):
         assertTrue((response['job_status']['total']) == None)
         assertTrue((response['job_status']['progress']) == None)
         assertTrue((response['job_status']['message']) == None)
+
+def assertCustomFieldsEq(flds1, flds2):
+    assertEq(len(flds1), len(flds2))
+    def fldsToDict(f):
+        result = {}
+        for pair in f:
+            result[pair['id']] = pair['value']
+        return result
+    assertEq(fldsToDict(flds1), fldsToDict(flds2))
 
 def doRequest(method, *args, **kwargs):
     if method.upper() == 'GET':

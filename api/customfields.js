@@ -20,9 +20,9 @@ export function renderCustomFields(ticket) {
     return arr.join('\n')
 }
 
-export function intCustomFields(obj) {
-    if (obj && obj.custom_fields) {
-        for (let fld of obj.custom_fields) {
+export function intCustomFields(custom_fields) {
+    if (custom_fields) {
+        for (let fld of custom_fields) {
             if (fld.id) {
                 fld.id = normalizeId(fld.id)
             }

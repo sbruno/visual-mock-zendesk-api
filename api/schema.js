@@ -69,8 +69,7 @@ export function validateInternalTicket(obj) {
         tags: yup.array().of(yup.string()).required(),
         // via: not yet implemented
         custom_fields: yup.array().of(yup.object({
-            // id: yup.number().required().positive().integer(), hack
-            id: yup.mixed().required(),
+            id: yup.number().required().positive().integer(),
             value: yup.mixed().required()})).required(),
         fields: yup.array().of(yup.object({
             id: yup.number().required().positive().integer(),
