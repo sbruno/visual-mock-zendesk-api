@@ -60,7 +60,7 @@ export function apiRoutes(app) {
         }, req, res)
       })
         
-    register('get', '/api/v2/users/show_many', (req, res) => {
+      register('get', '/api/v2/users/show_many', (req, res) => {
         wrapHandler(()=> {
             if (!req.query.ids) {
                 throw errNotImplemented('no ids given')
@@ -110,7 +110,7 @@ export function apiRoutes(app) {
             if (!req.query.query) {
                 throw new Error('must provide a query ' + JSON.stringify(req.query))
             }
-            
+
             const result = apiSearch(req.query.query, req.query.sort_by, req.query.sort_order)
             res.send(result)
         }, req, res)

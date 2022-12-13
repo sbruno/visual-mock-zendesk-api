@@ -11,14 +11,17 @@ assertEq('/mock.zendesk.com', configs['overrideJobStatusUrlPrefix'])
 
 # we support with+without .json suffix on all endpoints,
 # so run tests twice, once with this True, and once with it False 
-doWithJson = True
+doWithJson = False
 
 #~ host = ''
 #~ stateIds = dict(
-    #~ admin = 11007294636571,
+    #~ admin = 10981611611675,
     #~ user1 = 11007294636571,
     #~ user2 = 11007299217179,
     #~ user3 = 11007314541595,
+    #~ fld1=10993199398427,
+    #~ fld2=10993238892315,
+    #~ fld3=11130845293467,
 #~ )
 host = f'http://localhost:{configs["portNumber"]}'
 stateIds = dict(
@@ -83,7 +86,6 @@ def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
         assertTrue(endpoint.startswith('/api'), endpoint)
         fullEndpoint = f'{host}{endpoint}{encodedQueryString}'
 
-    trace('fullEndpoint ' + fullEndpoint)
     # would use curl, but want to fail on non-2xx responses
     # and most distros don't have latest curl with --fail-with-body
     headers = {}
@@ -99,6 +101,11 @@ def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
         except:
             assertTrue(False, 'looks like the json we are about to send does not parse', jsonData)
 
+    #~ crc = files.computeHashBytes((jsonData or '').replace(' ', '').replace('\n', '').replace('\r', '').replace('\t', '').encode('utf-8'), 'crc32')
+    #~ fullEndpointPrint = fullEndpoint.replace('http://localhost:8999/', '')
+    #~ trace(f"if endpoint == '{fullEndpointPrint}' and crc == '{crc}':\n\treturn xxx, '''xxxxx'''")
+    trace('fullEndpoint=' + fullEndpoint, jsonData, '\n\n\n')
+    
     r = doRequest(method, fullEndpoint, headers=headers, data=jsonData)
     if not (r.status_code>=200 and r.status_code<=299):
         trace('was sending,', method, fullEndpoint, jsonData)
