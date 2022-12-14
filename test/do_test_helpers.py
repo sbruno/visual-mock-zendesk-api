@@ -14,15 +14,7 @@ assertEq('/mock.zendesk.com', configs['overrideJobStatusUrlPrefix'])
 doWithJson = False
 
 #~ host = ''
-#~ stateIds = dict(
-    #~ admin = 10981611611675,
-    #~ user1 = 11007294636571,
-    #~ user2 = 11007299217179,
-    #~ user3 = 11007314541595,
-    #~ fld1=10993199398427,
-    #~ fld2=10993238892315,
-    #~ fld3=11130845293467,
-#~ )
+
 host = f'http://localhost:{configs["portNumber"]}'
 stateIds = dict(
     admin=111,

@@ -115,11 +115,13 @@ def go4TicketsCreateMany():
     #     requester not set, author set  (testAuthorId2)
     #     requester not set, author not set but prev is (testAuthorId3)
     #     requester not set, author not set (plainStringComment2)
+
+    # note that if comment isn't set, zendesk api will ask for a 'description',
+    # this is misleading because a description passed in will also create a first comment.
     s = r'''{
     "tickets": [
       {
         "subject": "ticket1",
-        "description": "descr1",
         "created_at": "2022-01-01T06:38:32.399Z",
         "requester_id": %USER1%,
         "status": "pending", ### note ids are sometimes quoted, sometimes not, need to support both
@@ -140,7 +142,6 @@ def go4TicketsCreateMany():
         ]
       }, {
         "subject": "ticket2",
-        "description": "descr2",
         "created_at": "2022-01-01T06:38:32.399Z",
         "requester": {"name":"utest4inline", "email": "utest4inline@a.com"}, ### inline user creation
         "tags": ["tag1", "tag2"],
@@ -149,22 +150,18 @@ def go4TicketsCreateMany():
         ### comments default to public=true
       },
       {
-        "description": "descr3", ### create a ticket with no subject and no requester
         "comment": "plainStringComment2", ### comment syntax shortcut, string data type
         "tags": ["tag1", "tag2", "%TAG_REMOVED_BY_TRIGGER%"] ### we'll remove it
       },
       {
-        "description": "descr4",
         "requester_id": %USER2%,
         "submitter_id": %USER3%,
         "comments": [{"body": "testAuthorId1"}]
       },
       {
-        "description": "descr5",
         "comments": [{"body": "testAuthorId2", "author_id": "%USER1%"}, {"body": "testAuthorId3"}]
       },
       {
-        "description": "descr6",
         "requester_id": %USER1%,
         "comments": [{"body": "testAuthorIdUpdate", "author_id": "%USER2%"}],
         "tags": ["%TAG_REMOVED_BY_TRIGGER%"] ### we won't remove it because we'll add a private comment
@@ -481,7 +478,6 @@ def go8Search():
         ### create ticket: open/no tag/no fld1/no fld2/fld3=target = isThere 
         "created_at": "2022-04-01T06:38:32.399Z",
         "subject": "t1",
-        "description": "t1",
         "status": "open",
         "custom_fields": [
             {"id":%FLDID3%, "value":"includeTicketsWhereFld3SaysThis"}
@@ -493,7 +489,6 @@ def go8Search():
         ### create ticket: no conditions match = filtered out  
         "created_at": "2022-04-02T06:38:32.399Z",
         "subject": "t2",
-        "description": "t2",
         "status": "closed",
         "custom_fields": [
             {"id":%FLDID1%, "value":"skipTicketsWhereFld1SaysThis"},
@@ -507,7 +502,6 @@ def go8Search():
         ### create ticket: closed(wrong)/no tag/fld1=different/fld2=different/fld3=target = filtered out 
         "created_at": "2022-04-03T06:38:32.399Z",
         "subject": "t3",
-        "description": "t3",
         "status": "closed",
         "custom_fields": [
             {"id":%FLDID1%, "value":"differentVal1"},
@@ -521,7 +515,6 @@ def go8Search():
         ### create ticket: open/tag(wrong)/fld1=different/fld2=different/fld3=target = filtered out  
         "created_at": "2022-04-04T06:38:32.399Z",
         "subject": "t4",
-        "description": "t4",
         "status": "open",
         "custom_fields": [
             {"id":%FLDID1%, "value":"differentVal1"},
@@ -535,7 +528,6 @@ def go8Search():
         ### create ticket: open/no tag/fld1=skip/fld2=different/fld3=target = filtered out  
         "created_at": "2022-04-05T06:38:32.399Z",
         "subject": "t5",
-        "description": "t5",
         "status": "open",
         "custom_fields": [
             {"id":%FLDID1%, "value":"skipTicketsWhereFld1SaysThis"},
@@ -549,7 +541,6 @@ def go8Search():
         ### create ticket: open/no tag/fld1=different/fld2=skip/fld3=target = filtered out  
         "created_at": "2022-04-06T06:38:32.399Z",
         "subject": "t6",
-        "description": "t6",
         "status": "open",
         "custom_fields": [
             {"id":%FLDID1%, "value":"differentVal1"},
@@ -563,7 +554,6 @@ def go8Search():
         ### create ticket: open/no tag/fld1=different/fld2=different/fld3=other(wrong) = filtered out  
         "created_at": "2022-04-07T06:38:32.399Z",
         "subject": "t7",
-        "description": "t7",
         "status": "open",
         "custom_fields": [
             {"id":%FLDID1%, "value":"differentVal1"},
@@ -589,7 +579,6 @@ def go8Search():
         ### create ticket: open/no tag/fld1=different/fld2=different/fld3=target = isThere 
         "created_at": "2022-04-08T06:38:32.399Z",
         "subject": "t8",
-        "description": "t8",
         "status": "open",
         "custom_fields": [
             {"id":%FLDID1%, "value":"differentVal1"},
