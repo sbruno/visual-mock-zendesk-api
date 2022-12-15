@@ -4,6 +4,7 @@ from ben_python_common import *
 import requests
 import json
 import urllib.parse
+import do_test_recorded
 
 configText = files.readall('configs.json')
 configs = json.loads(configText)
@@ -13,11 +14,14 @@ assertEq('/mock.zendesk.com', configs['overrideJobStatusUrlPrefix'])
 # so run tests twice, once with this True, and once with it False 
 doWithJson = False
 
-#~ host = ''
+# instead of contacting mock-zendesk, contact recorded responses
+# from a real zendesk instance
+replayRecordedResponses = True
+replayRecordedResponsesCounter = 0
 
 host = f'http://localhost:{configs["portNumber"]}'
 stateIds = dict(
-    admin=111,
+    admin = None,
     user1 = None,
     user2 = None,
     user3 = None,
@@ -30,11 +34,9 @@ def confirmSet(obj, flds):
         assertTrue(obj[fld], f'field {fld} is null/None')
 
 def subInTemplates(s):
-    customFlds = configs['customFields']
-    lCustomFlds = list(customFlds.keys())
-    s = s.replace('%FLDID1%', customFlds[lCustomFlds[0]])
-    s = s.replace('%FLDID2%', customFlds[lCustomFlds[1]])
-    s = s.replace('%FLDID3%', customFlds[lCustomFlds[2]])
+    s = s.replace('%FLDID1%', str(stateIds["customFld1"]))
+    s = s.replace('%FLDID2%', str(stateIds["customFld2"]))
+    s = s.replace('%FLDID3%', str(stateIds["customFld3"]))
     s = s.replace('%USER1%', str(stateIds["user1"]))
     s = s.replace('%USER2%', str(stateIds["user2"]))
     s = s.replace('%USER3%', str(stateIds["user3"]))
@@ -47,10 +49,8 @@ def subInTemplates(s):
         if obj['action']=='openPostWhenPublicCommentContainingTextPosted':
             s = s.replace('%TEXT_NOTICED_BY_TRIGGER%', obj['value'])
 
-
-    
-
     return s
+
 
 def quote(s):
     return urllib.parse.quote(s)
@@ -93,12 +93,17 @@ def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
         except:
             assertTrue(False, 'looks like the json we are about to send does not parse', jsonData)
 
-    #~ crc = files.computeHashBytes((jsonData or '').replace(' ', '').replace('\n', '').replace('\r', '').replace('\t', '').encode('utf-8'), 'crc32')
-    #~ fullEndpointPrint = fullEndpoint.replace('http://localhost:8999/', '')
-    #~ trace(f"if endpoint == '{fullEndpointPrint}' and crc == '{crc}':\n\treturn xxx, '''xxxxx'''")
-    trace('fullEndpoint=' + fullEndpoint, jsonData, '\n\n\n')
     
-    r = doRequest(method, fullEndpoint, headers=headers, data=jsonData)
+    trace('fullEndpoint=' + fullEndpoint, jsonData, '\n\n\n')
+    if replayRecordedResponses:
+        global replayRecordedResponsesCounter
+        text = do_test_recorded.simulatedResponses[replayRecordedResponsesCounter]
+        replayRecordedResponsesCounter += 1
+        code = 400 if text.strip().startswith('Error') else 200
+        r = Bucket(text=text, status_code=code)
+    else:
+        r = doRequest(method, fullEndpoint, headers=headers, data=jsonData)
+
     if not (r.status_code>=200 and r.status_code<=299):
         trace('was sending,', method, fullEndpoint, jsonData)
         if 'x-zendesk-api-warn' in r.headers:
@@ -123,20 +128,23 @@ def stripComments(s):
     return '\n'.join(lines)
     
 def checkJobStatusOk(response, expectedStatus):
-    assertEq(expectedStatus, response['job_status']['status'])
     theId = response['job_status']['id']
-    assertTrue(configs['overrideJobStatusUrlPrefix'] in response['job_status']['url'])
-    assertTrue(response['job_status']['url'].endswith(f'/api/v2/job_statuses/{theId}.json'))
+    if not replayRecordedResponses:
+        assertTrue(configs['overrideJobStatusUrlPrefix'] in response['job_status']['url'])
+    assertTrue(response['job_status']['url'].endswith(f'/api/v2/job_statuses/{theId}.json'), '-=-======================='+response['job_status']['url']+'=========='+f'/api/v2/job_statuses/{theId}.json')
     
     if expectedStatus == 'completed':
         assertTrue(int(response['job_status']['total']) > 0)
         assertTrue(int(response['job_status']['progress']) > 0)
         assertTrue(len(response['job_status']['message']) > 0)
-
-    else:
+        assertEq('completed', response['job_status']['status'])
+    elif expectedStatus == 'queued':
         assertTrue((response['job_status']['total']) == None)
         assertTrue((response['job_status']['progress']) == None)
         assertTrue((response['job_status']['message']) == None)
+        assertTrue(response['job_status']['status'] in ['completed', 'queued'], response['job_status']['status'])
+    else:
+        assertTrue(False, 'unsupported', expectedStatus)
 
 def assertTagsEq(tags1, tags2):
     assertEq(sorted(tags1), sorted(tags2))
@@ -162,7 +170,8 @@ def testComment(c, authorId, text, public=True):
 
 def testBatchResults(result, action, status, hasSuccess=False):
     for i, item in enumerate(result['results']):
-        assertEq(i, item['index'])
+        if not replayRecordedResponses or 'index' in item:
+            assertEq(i, item['index'])
         thisAction = action if isinstance(action, str) else action(i)
         thisStatus = status if isinstance(status, str) else status(i)
         assertEq(thisAction, item['action'])
@@ -183,5 +192,19 @@ def doRequest(method, *args, **kwargs):
         return requests.post(*args, **kwargs)
     else:
         assertTrue(False, "unknown method")
+
+def setupStateIds():
+    if replayRecordedResponses:
+        stateIds['customFld1'] = '10993199398427'
+        stateIds['customFld2'] = '10993238892315'
+        stateIds['customFld3'] = '11130845293467'
+        stateIds['admin'] = '10981611611675'
+    else:
+        customFlds = configs['customFields']
+        lCustomFlds = list(customFlds.keys())
+        stateIds['customFld1'] = customFlds[lCustomFlds[0]]
+        stateIds['customFld2'] = customFlds[lCustomFlds[1]]
+        stateIds['customFld3'] = customFlds[lCustomFlds[2]]
+        stateIds['admin'] = '111'
 
 

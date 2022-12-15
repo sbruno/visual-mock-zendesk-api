@@ -633,7 +633,10 @@ def go8Search():
 
 
 def go():
+    setupStateIds()
     go1UsersCreateMany()
+    trace('yay')
+    return
     go2UsersSearch()
     go3UsersShowMany()
     go4TicketsCreateMany()
