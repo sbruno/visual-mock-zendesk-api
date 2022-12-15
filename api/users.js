@@ -19,6 +19,8 @@ export function apiUsersShowMany(payload) {
 
         result.push(globalState.persistedState.users[id])
     }
+    
+    result.reverse()// there is no guarenteed ordering
     return {users: result}
 }
 

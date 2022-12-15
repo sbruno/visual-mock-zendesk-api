@@ -16,7 +16,7 @@ doWithJson = False
 
 # instead of contacting mock-zendesk, contact recorded responses
 # from a real zendesk instance
-replayRecordedResponses = True
+replayRecordedResponses = False
 replayRecordedResponsesCounter = 0
 
 host = f'http://localhost:{configs["portNumber"]}'
@@ -170,15 +170,17 @@ def testComment(c, authorId, text, public=True):
 
 def testBatchResults(result, action, status, hasSuccess=False):
     for i, item in enumerate(result['results']):
-        if not replayRecordedResponses or 'index' in item:
+        if not replayRecordedResponses or ('index' in item):
             assertEq(i, item['index'])
-        thisAction = action if isinstance(action, str) else action(i)
-        thisStatus = status if isinstance(status, str) else status(i)
-        assertEq(thisAction, item['action'])
-        assertEq(thisStatus, item['status'])
+        if action is not None and status is not None:
+            thisAction = action if isinstance(action, str) else action(i)
+            thisStatus = status if isinstance(status, str) else status(i)
+            assertEq(thisAction, item['action'])
+            assertEq(thisStatus, item['status'])
         assertTrue(int(item['id']) > 0)
         if hasSuccess:
-            assertEq(True, item['success'])
+            if not replayRecordedResponses or ('success' in item):
+                assertEq(True, item['success'])
 
 
 def doRequest(method, *args, **kwargs):
@@ -195,16 +197,19 @@ def doRequest(method, *args, **kwargs):
 
 def setupStateIds():
     if replayRecordedResponses:
-        stateIds['customFld1'] = '10993199398427'
-        stateIds['customFld2'] = '10993238892315'
-        stateIds['customFld3'] = '11130845293467'
-        stateIds['admin'] = '10981611611675'
+        stateIds['customFld1'] = 10993199398427
+        stateIds['customFld2'] = 10993238892315
+        stateIds['customFld3'] = 11130845293467
+        stateIds['admin'] = 10981611611675
     else:
         customFlds = configs['customFields']
         lCustomFlds = list(customFlds.keys())
         stateIds['customFld1'] = customFlds[lCustomFlds[0]]
         stateIds['customFld2'] = customFlds[lCustomFlds[1]]
         stateIds['customFld3'] = customFlds[lCustomFlds[2]]
-        stateIds['admin'] = '111'
+        stateIds['admin'] = 111
 
-
+def sortResultsByOurNumber(obj, stateIds, key):
+    # maps to our numbers, so we are comparing 'ticket2' to 'ticket3'
+    invertedDict = dict((v, k) for k, v in stateIds.items())
+    obj[key].sort(key=lambda val: invertedDict.get(val['id']))

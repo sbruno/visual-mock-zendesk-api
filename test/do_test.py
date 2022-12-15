@@ -87,10 +87,12 @@ def go2UsersSearch():
 def go3UsersShowMany():
     ############## No results ###################
     result = sendGet('/api/v2/users/show_many', f'ids=999')
+    sortResultsByOurNumber(result, stateIds, 'users')
     assertEq(0, len(result['users']))
 
     ############## One result ###################
     result = sendGet('/api/v2/users/show_many', f'ids={stateIds["user1"]}')
+    sortResultsByOurNumber(result, stateIds, 'users')
     assertEq(1, len(result['users']))
     assertEq(stateIds["user1"], result['users'][0]['id'])
     assertEq('utest1', result['users'][0]['name'])
@@ -98,6 +100,7 @@ def go3UsersShowMany():
 
     ############## Many results, skip missing ###################
     result = sendGet('/api/v2/users/show_many', f'ids={stateIds["user2"]},999,{stateIds["user3"]}')
+    sortResultsByOurNumber(result, stateIds, 'users')
     assertEq(2, len(result['users']))
     assertEq(stateIds["user2"], result['users'][0]['id'])
     assertEq('utest2', result['users'][0]['name'])
@@ -172,10 +175,10 @@ def go4TicketsCreateMany():
     s = subInTemplates(s)
     result = sendPostAndGetJob('/api/v2/imports/tickets/create_many', s)
     assertEq(6, len(result['results']))
+    testBatchResults(result, action=None, status=None, hasSuccess=True)
     for i in range(6):
         assertEq(i, result['results'][i]['index'])
         stateIds[f'ticket{i+1}'] = int(result['results'][i]['id'])
-        assertEq(True, result['results'][i]['success'])
 
     ############## Confirm inline user got created ###################
     result = sendGet('/api/v2/users/search', 'query=email:utest4inline@a.com')
@@ -186,20 +189,24 @@ def go4TicketsCreateMany():
     assertEq('utest4inline@a.com', result['users'][0]['email'])
     stateIds['user4inline'] = int(result['users'][0]['id'])
 
+    
 
 def go5TicketsShowMany():
     ############## No results ###################
     result = sendGet('/api/v2/tickets/show_many', f'ids=999')
+    sortResultsByOurNumber(result, stateIds, 'tickets')
     assertEq(0, len(result['tickets']))
 
     ############## One result ###################
     result = sendGet('/api/v2/tickets/show_many', f'ids={stateIds["ticket1"]}')
+    sortResultsByOurNumber(result, stateIds, 'tickets')
     assertEq(1, len(result['tickets']))
     assertEq(stateIds["ticket1"], result['tickets'][0]['id'])
     assertEq('ticket1', result['tickets'][0]['subject'])
 
     ############## Many results, skip missing ###################
     result = sendGet('/api/v2/tickets/show_many', f'ids={stateIds["ticket2"]},999,{stateIds["ticket3"]}')
+    sortResultsByOurNumber(result, stateIds, 'tickets')
     assertEq(2, len(result['tickets']))
     assertEq(stateIds["ticket2"], result['tickets'][0]['id'])
     assertEq('ticket2', result['tickets'][0]['subject'])
@@ -209,6 +216,7 @@ def go5TicketsShowMany():
     ############## Thoroughly check data ###################
     allIds = ','.join(str(stateIds[f'ticket{i}']) for i in range(1,7))
     result = sendGet('/api/v2/tickets/show_many', f'ids={allIds}')
+    sortResultsByOurNumber(result, stateIds, 'tickets')
     t1, t2, t3, t4, t5, t6 = result['tickets']
     assertEq(6, len(result['tickets']))
     for i in range(6):
@@ -321,6 +329,7 @@ def go6TicketsShowComments():
     assertEq(stateIds['admin'], result3['comments'][0]['author_id'])
     # look at tickets
     result = sendGet('/api/v2/tickets/show_many', f'ids={stateIds["ticket3"]},{stateIds["ticket4"]},{stateIds["ticket5"]}')
+    sortResultsByOurNumber(result, stateIds, 'tickets')
     assertEq(stateIds['admin'], result['tickets'][0]['requester_id'])
     assertEq(stateIds['admin'], result['tickets'][0]['submitter_id'])
     assertEq(stateIds['user2'], result['tickets'][1]['requester_id'])
@@ -377,6 +386,7 @@ def go7TicketsUpdateMany():
 
     allIds = ','.join(str(stateIds[f'ticket{i}']) for i in range(1,7))
     afterMods = sendGet('/api/v2/tickets/show_many', f'ids={allIds}')
+    sortResultsByOurNumber(afterMods, stateIds, 'tickets')
     t1, t2, t3, t4, t5, t6 = afterMods['tickets']
     assertEq(6, len(afterMods['tickets']))
 
@@ -635,12 +645,15 @@ def go8Search():
 def go():
     setupStateIds()
     go1UsersCreateMany()
-    trace('yay')
-    return
+    
     go2UsersSearch()
+    
     go3UsersShowMany()
+    
     go4TicketsCreateMany()
+    
     go5TicketsShowMany()
+    
     go6TicketsShowComments()
     go7TicketsUpdateMany()
     go8Search()

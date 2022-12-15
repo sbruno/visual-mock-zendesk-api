@@ -126,6 +126,8 @@ export function apiTicketsShowMany(payload) {
         }
         result.push(globalState.persistedState.tickets[id])
     }
+
+    result.reverse() // there is no guarenteed ordering
     return {tickets: result}
 }
 
