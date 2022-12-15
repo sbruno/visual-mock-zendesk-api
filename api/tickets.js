@@ -124,7 +124,10 @@ export function apiTicketsShowMany(payload) {
             console.log(`ticket not found ${id}`)
             continue
         }
-        result.push(globalState.persistedState.tickets[id])
+
+        const existing = lodash.cloneDeep(globalState.persistedState.tickets[id])
+        existing.fields = [...existing.fields, ...existing.custom_fields]
+        result.push(existing)
     }
 
     result.reverse() // there is no guarenteed ordering

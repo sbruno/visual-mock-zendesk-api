@@ -211,7 +211,7 @@ def go5TicketsShowMany():
     assertEq(stateIds["ticket2"], result['tickets'][0]['id'])
     assertEq('ticket2', result['tickets'][0]['subject'])
     assertEq(stateIds["ticket3"], result['tickets'][1]['id'])
-    assertEq('(no subject given)', result['tickets'][1]['subject'])
+    assertSubject('(no subject given)', result['tickets'][1]['subject'])
 
     ############## Thoroughly check data ###################
     allIds = ','.join(str(stateIds[f'ticket{i}']) for i in range(1,7))
@@ -233,10 +233,11 @@ def go5TicketsShowMany():
     assertEq(stateIds["user1"], t1['submitter_id'])
     assertEq(stateIds["admin"], t1['assignee_id'])
     assertTagsEq(["tag1", "tag2"], t1['tags'])
-    assertCustomFieldsEq(expectedCustomFlds,  t1['custom_fields'])
-    assertEq([], t1['fields'])
+    assertCustomFieldsEq(expectedCustomFlds, t1['custom_fields'])
+    assertCustomFieldsEq(expectedCustomFlds, t1['fields'])
     assertEq(True, t1['is_public'])
-    assertEq(2, len(t1['comment_ids']))
+    if not replayRecordedResponses:
+        assertEq(2, len(t1['comment_ids']))
 
     assertEq(stateIds["ticket2"], t2['id'])
     assertEq('ticket2', t2['subject'])
@@ -246,36 +247,39 @@ def go5TicketsShowMany():
     assertEq(stateIds["user4inline"], t2['submitter_id'])
     assertEq(stateIds["admin"], t2['assignee_id'])
     assertTagsEq(["tag1", "tag2"], t2['tags'])
-    assertEq([], t2['custom_fields'])
-    assertEq([], t2['fields'])
+    assertCustomFieldsEq([], t2['custom_fields'])
+    assertCustomFieldsEq([], t2['fields'])
     assertEq(True, t2['is_public'])
-    assertEq(1, len(t2['comment_ids']))
+    if not replayRecordedResponses:
+        assertEq(1, len(t2['comment_ids']))
 
     assertEq(stateIds["ticket3"], t3['id'])
-    assertEq('(no subject given)', t3['subject'])
-    assertEq('(no subject given)', t3['raw_subject'])
+    assertSubject('(no subject given)', t3['subject'])
+    assertSubject('(no subject given)', t3['raw_subject'])
     assertEq('open', t3['status'])
     assertEq(stateIds["admin"], t3['requester_id'])
     assertEq(stateIds["admin"], t3['submitter_id'])
     assertEq(stateIds["admin"], t3['assignee_id'])
     assertTagsEq(["tag1", "tag2", subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t3['tags'])
-    assertEq([], t3['custom_fields'])
-    assertEq([], t3['fields'])
+    assertCustomFieldsEq([], t3['custom_fields'])
+    assertCustomFieldsEq([], t3['fields'])
     assertEq(True, t3['is_public'])
-    assertEq(1, len(t3['comment_ids']))
+    if not replayRecordedResponses:
+        assertEq(1, len(t3['comment_ids']))
 
     assertEq(stateIds["ticket6"], t6['id'])
-    assertEq('(no subject given)', t6['subject'])
-    assertEq('(no subject given)', t6['raw_subject'])
+    assertSubject('(no subject given)', t6['subject'])
+    assertSubject('(no subject given)', t6['raw_subject'])
     assertEq('open', t6['status'])
     assertEq(stateIds["user1"], t6['requester_id'])
     assertEq(stateIds["user1"], t6['submitter_id'])
     assertEq(stateIds["admin"], t6['assignee_id'])
     assertTagsEq([subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t6['tags'])
-    assertEq([], t6['custom_fields'])
-    assertEq([], t6['fields'])
+    assertCustomFieldsEq([], t6['custom_fields'])
+    assertCustomFieldsEq([], t6['fields'])
     assertEq(True, t6['is_public'])
-    assertEq(1, len(t6['comment_ids']))
+    if not replayRecordedResponses:
+        assertEq(1, len(t6['comment_ids']))
 
 
 
@@ -401,6 +405,9 @@ def go7TicketsUpdateMany():
     assertCustomFieldsEq([{'id':1, 'value':'a'}, {'id':2, 'value':'b'}], [{'id':1, 'value':'a'}, {'id':2, 'value':'b'}])
     assertCustomFieldsEq([{'id':1, 'value':'a'}, {'id':2, 'value':'b'}], [{'id':2, 'value':'b'}, {'id':1, 'value':'a'}])
     assertException(lambda: assertCustomFieldsEq([{'id':1, 'value':'a'}, {'id':2, 'value':'b'}], [{'id':2, 'value':'b'}, {'id':1, 'value':'c'}]), Exception)
+    assertTagsEq(['a', 'b'], ['a', 'b'])
+    assertTagsEq(['a', 'b'], ['b', 'a'])
+    assertException(lambda: assertTagsEq(['a', 'b'], ['a', 'a']), Exception)
 
     ### test ticket 1
     assertEq(stateIds["ticket1"], t1['id'])
@@ -414,9 +421,8 @@ def go7TicketsUpdateMany():
     expectedCustomFlds = [{'id': int(subInTemplates('%FLDID1%')), 'value': 'fldval1'}, 
         {'id': int(subInTemplates('%FLDID2%')), 'value': 'fldval2_b'}, 
         {'id': int(subInTemplates('%FLDID3%')), 'value': 'fldval3_b'}]
-    assertCustomFieldsEq(expectedCustomFlds, 
-        t1['custom_fields'])
-    assertEq([], t1['fields'])
+    assertCustomFieldsEq(expectedCustomFlds, t1['custom_fields'])
+    assertCustomFieldsEq(expectedCustomFlds, t1['fields'])
     assertEq(True, t1['is_public'])
     assertEq(3, len(t1['comment_ids']))
     comments1 = sendGet(f'/api/v2/tickets/{t1["id"]}/comments')['comments']
@@ -435,9 +441,8 @@ def go7TicketsUpdateMany():
     assertEq(stateIds["admin"], t2['assignee_id'])
     assertTagsEq(["tag1", "tag2", "tag3"], t2['tags'])
     expectedCustomFlds =  [{'id': int(subInTemplates('%FLDID2%')), 'value': 'new'}]
-    assertCustomFieldsEq(expectedCustomFlds, 
-        t2['custom_fields'])
-    assertEq([], t2['fields'])
+    assertCustomFieldsEq(expectedCustomFlds, t2['custom_fields'])
+    assertCustomFieldsEq(expectedCustomFlds, t2['fields'])
     assertEq(True, t2['is_public'])
     assertEq(1, len(t2['comment_ids']))
     comments2 = sendGet(f'/api/v2/tickets/{t2["id"]}/comments')['comments']
@@ -446,15 +451,15 @@ def go7TicketsUpdateMany():
 
     ### test ticket 3
     assertEq(stateIds["ticket3"], t3['id'])
-    assertEq('(no subject given)', t3['subject'])
-    assertEq('(no subject given)', t3['raw_subject'])
+    assertSubject('(no subject given)', t3['subject'])
+    assertSubject('(no subject given)', t3['raw_subject'])
     assertEq('open', t3['status'])
     assertEq(stateIds["admin"], t3['requester_id'])
     assertEq(stateIds["admin"], t3['submitter_id'])
     assertEq(stateIds["admin"], t3['assignee_id'])
     assertTagsEq(["tag1"], t3['tags']) # removed by remove_tags and by trigger
-    assertEq([], t3['custom_fields'])
-    assertEq([], t3['fields'])
+    assertCustomFieldsEq([], t3['custom_fields'])
+    assertCustomFieldsEq([], t3['fields'])
     assertEq(True, t3['is_public'])
     assertEq(2, len(t3['comment_ids']))
     comments3 = sendGet(f'/api/v2/tickets/{t3["id"]}/comments')['comments']
@@ -464,15 +469,15 @@ def go7TicketsUpdateMany():
 
     ### test ticket 6
     assertEq(stateIds["ticket6"], t6['id'])
-    assertEq('(no subject given)', t6['subject'])
-    assertEq('(no subject given)', t6['raw_subject'])
+    assertSubject('(no subject given)', t6['subject'])
+    assertSubject('(no subject given)', t6['raw_subject'])
     assertEq('open', t6['status'])
     assertEq(stateIds["user1"], t6['requester_id'])
     assertEq(stateIds["user1"], t6['submitter_id'])
     assertEq(stateIds["admin"], t6['assignee_id'])
     assertTagsEq([subInTemplates('%TAG_REMOVED_BY_TRIGGER%')], t6['tags']) # trigger won't fire because it's a private post
-    assertEq([], t6['custom_fields'])
-    assertEq([], t6['fields'])
+    assertCustomFieldsEq([], t6['custom_fields'])
+    assertCustomFieldsEq([], t6['fields'])
     assertEq(True, t6['is_public'])
     assertEq(2, len(t6['comment_ids']))
     comments6 = sendGet(f'/api/v2/tickets/{t6["id"]}/comments')['comments']
@@ -654,9 +659,9 @@ def go():
     
     go5TicketsShowMany()
     
-    go6TicketsShowComments()
-    go7TicketsUpdateMany()
-    go8Search()
+    #~ go6TicketsShowComments()
+    #~ go7TicketsUpdateMany()
+    #~ go8Search()
     trace('\n\nall tests complete')
 
 
