@@ -97,8 +97,9 @@ def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
     trace('fullEndpoint=' + fullEndpoint, jsonData, '\n\n\n')
     if replayRecordedResponses:
         global replayRecordedResponsesCounter
-        text = do_test_recorded.simulatedResponses[replayRecordedResponsesCounter]
+        index = replayRecordedResponsesCounter
         replayRecordedResponsesCounter += 1
+        text = do_test_recorded.simulatedResponses[index]
         code = 400 if text.strip().startswith('Error') else 200
         r = Bucket(text=text, status_code=code)
     else:
@@ -111,7 +112,10 @@ def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
         trace(f"status_code={r.status_code}")
         assertTrue(False, f"status_code={r.status_code}", r.text)
     else:
-        return json.loads(r.text)
+        try:
+            return json.loads(r.text)
+        except:
+            assertTrue(False, 'looks like the json we got does not parse', r.text)
 
 
 

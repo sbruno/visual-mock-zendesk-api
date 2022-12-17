@@ -21,16 +21,17 @@ How to set this up
 
 simulatedResponses = [
     # /api/delete_all
-    '''{}''',
-    '''
+    r'''{}''',
+    r'''
     Error: cannot pass in id
     ''',
     
-    '''
+    r'''
     Error: missing email
     ''',
     
-    '''
+    # use r''' instead of ''' so that 
+    r'''
 {
   "job_status": {
     "id": "111e0b044094f0c67893ac9fe64f1a99",
@@ -40,8 +41,8 @@ simulatedResponses = [
 }
     ''',
     
-    # some guesswork here since trial responds with 403 on the call
-    '''
+    # some guesswork here since a trial account responds with 403 on the call
+    r'''
 {
   "job_status": {
     "id": "111e0b044094f0c67893ac9fe64f1a99",
@@ -68,7 +69,7 @@ simulatedResponses = [
 }
     ''',
 
-    '''
+    r'''
 {
   "job_status": {
     "id": "222e0b044094f0c67893ac9fe64f1a99",
@@ -80,7 +81,7 @@ simulatedResponses = [
     
     # some guesswork here since trial responds with 403 on the call
     # but shouldn't be risky to accept existing IDs
-    '''
+    r'''
 {
   "job_status": {
     "id": "222e0b044094f0c67893ac9fe64f1a99",
@@ -107,7 +108,7 @@ simulatedResponses = [
 }
     ''',
     
-    '''
+    r'''
 {
   "count": 0,
   "next_page": null,
@@ -116,7 +117,7 @@ simulatedResponses = [
 }
     ''',
     
-    '''
+    r'''
 {
   "count": 1,
   "next_page": null,
@@ -165,7 +166,7 @@ simulatedResponses = [
 }
     ''',
     
-    '''
+    r'''
 {
   "count": 0,
   "next_page": null,
@@ -175,7 +176,7 @@ simulatedResponses = [
 
     ''',
     
-    '''
+    r'''
 {
   "count": 1,
   "next_page": null,
@@ -224,7 +225,7 @@ simulatedResponses = [
 }
     ''',
     
-    '''
+    r'''
 {
   "count": 2,
   "next_page": null,
@@ -312,7 +313,7 @@ simulatedResponses = [
 }
     ''',
     
-    '''
+    r'''
 {
   "job_status": {
     "id": "V3-ca23937b26f18d8b32a6f592b863b6bc",
@@ -328,7 +329,7 @@ simulatedResponses = [
 
     ''',
     
-    '''
+    r'''
 {"job_status":{"id":"V3-ca23937b26f18d8b32a6f592b863b6bc","url":"https://exampleendpoint.zendesk.com/api/v2/job_statuses/V3-ca23937b26f18d8b32a6f592b863b6bc.json","total":6,"progress":6,"status":"completed","message":"Completed at 2022-12-11 21:00:36 +0000","results":[
 {"index":0,"id":20,"account_id":15745908},
 {"index":1,"id":18,"account_id":15745908},
@@ -340,7 +341,7 @@ simulatedResponses = [
     
    
     
-    '''
+    r'''
 {
   "count": 1,
   "next_page": null,
@@ -389,7 +390,7 @@ simulatedResponses = [
 }
     ''',
     
-    '''
+    r'''
 {
   "count": 0,
   "next_page": null,
@@ -398,7 +399,7 @@ simulatedResponses = [
 }
     ''',
     
-    '''
+    r'''
     {
   "count": 1,
   "next_page": null,
@@ -483,7 +484,7 @@ simulatedResponses = [
 }
     ''',
     
-    '''
+    r'''
     {
   "count": 2,
   "next_page": null,
@@ -644,8 +645,8 @@ simulatedResponses = [
 }
     ''',
     
-    '''
-    {
+    r'''
+{
   "count": 6,
   "next_page": null,
   "previous_page": null,
@@ -1098,14 +1099,250 @@ simulatedResponses = [
 }
     ''',
     
-    '''
+    #~ '''
+#~ Error: {
+  #~ "description": "Not found",
+  #~ "error": "RecordNotFound"
+#~ }
+    #~ ''',
+    
+    #~ '''
+#~ {
+  #~ "comments": [
+    #~ {
+      #~ "attachments": [],
+      #~ "audit_id": 11175222974363,
+      #~ "author_id": 11096765374107,
+      #~ "body": "plainStringComment1",
+      #~ "created_at": "2022-12-11T21:00:36Z",
+      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment1</p></div>",
+      #~ "id": 11175222974491,
+      #~ "metadata": {
+        #~ "custom": {},
+        #~ "system": {
+          #~ "latitude": 45.4901,
+          #~ "location": "Seattle, WA, United States",
+          #~ "longitude": -122.3747
+        #~ }
+      #~ },
+      #~ "plain_body": "plainStringComment1",
+      #~ "public": true,
+      #~ "type": "Comment",
+      #~ "via": {
+        #~ "channel": "api",
+        #~ "source": {
+          #~ "from": {},
+          #~ "rel": null,
+          #~ "to": {}
+        #~ }
+      #~ }
+    #~ }
+  #~ ],
+  #~ "count": 1,
+  #~ "next_page": null,
+  #~ "previous_page": null
+#~ }
+    #~ ''',
+    
+    #~ '''
+#~ {
+  #~ "comments": [
+    #~ {
+      #~ "attachments": [],
+      #~ "audit_id": 11175237252635,
+      #~ "author_id": 10981611611675,
+      #~ "body": "plainStringComment2",
+      #~ "created_at": "2022-12-11T21:00:35Z",
+      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
+      #~ "id": 11175237252763,
+      #~ "metadata": {
+        #~ "custom": {},
+        #~ "system": {
+          #~ "latitude": 45.4901,
+          #~ "location": "Seattle, WA, United States",
+          #~ "longitude": -122.3747
+        #~ }
+      #~ },
+      #~ "plain_body": "plainStringComment2",
+      #~ "public": true,
+      #~ "type": "Comment",
+      #~ "via": {
+        #~ "channel": "api",
+        #~ "source": {
+          #~ "from": {},
+          #~ "rel": null,
+          #~ "to": {}
+        #~ }
+      #~ }
+    #~ }
+  #~ ],
+  #~ "count": 1,
+  #~ "next_page": null,
+  #~ "previous_page": null
+#~ }
+    #~ ''',
+    
+    #~ '''
+#~ {
+  #~ "comments": [
+    #~ {
+      #~ "attachments": [],
+      #~ "audit_id": 11175237252635,
+      #~ "author_id": 10981611611675,
+      #~ "body": "plainStringComment2",
+      #~ "created_at": "2022-12-11T21:00:35Z",
+      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
+      #~ "id": 11175237252763,
+      #~ "metadata": {
+        #~ "custom": {},
+        #~ "system": {
+          #~ "latitude": 45.4901,
+          #~ "location": "Seattle, WA, United States",
+          #~ "longitude": -122.3747
+        #~ }
+      #~ },
+      #~ "plain_body": "plainStringComment2",
+      #~ "public": true,
+      #~ "type": "Comment",
+      #~ "via": {
+        #~ "channel": "api",
+        #~ "source": {
+          #~ "from": {},
+          #~ "rel": null,
+          #~ "to": {}
+        #~ }
+      #~ }
+    #~ }
+  #~ ],
+  #~ "count": 1,
+  #~ "next_page": null,
+  #~ "previous_page": null
+#~ }
+    #~ ''',
+    
+    #~ '''
+#~ {
+  #~ "comments": [
+    #~ {
+      #~ "attachments": [],
+      #~ "audit_id": 11175237252635,
+      #~ "author_id": 10981611611675,
+      #~ "body": "plainStringComment2",
+      #~ "created_at": "2022-12-11T21:00:35Z",
+      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
+      #~ "id": 11175237252763,
+      #~ "metadata": {
+        #~ "custom": {},
+        #~ "system": {
+          #~ "latitude": 45.4901,
+          #~ "location": "Seattle, WA, United States",
+          #~ "longitude": -122.3747
+        #~ }
+      #~ },
+      #~ "plain_body": "plainStringComment2",
+      #~ "public": true,
+      #~ "type": "Comment",
+      #~ "via": {
+        #~ "channel": "api",
+        #~ "source": {
+          #~ "from": {},
+          #~ "rel": null,
+          #~ "to": {}
+        #~ }
+      #~ }
+    #~ }
+  #~ ],
+  #~ "count": 1,
+  #~ "next_page": null,
+  #~ "previous_page": null
+#~ }
+    #~ ''',
+    
+    #~ '''
+#~ {
+  #~ "comments": [
+    #~ {
+      #~ "attachments": [],
+      #~ "audit_id": 11175237252635,
+      #~ "author_id": 10981611611675,
+      #~ "body": "plainStringComment2",
+      #~ "created_at": "2022-12-11T21:00:35Z",
+      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
+      #~ "id": 11175237252763,
+      #~ "metadata": {
+        #~ "custom": {},
+        #~ "system": {
+          #~ "latitude": 45.4901,
+          #~ "location": "Seattle, WA, United States",
+          #~ "longitude": -122.3747
+        #~ }
+      #~ },
+      #~ "plain_body": "plainStringComment2",
+      #~ "public": true,
+      #~ "type": "Comment",
+      #~ "via": {
+        #~ "channel": "api",
+        #~ "source": {
+          #~ "from": {},
+          #~ "rel": null,
+          #~ "to": {}
+        #~ }
+      #~ }
+    #~ }
+  #~ ],
+  #~ "count": 1,
+  #~ "next_page": null,
+  #~ "previous_page": null
+#~ }
+    #~ ''',
+    
+    #~ '''
+#~ {
+  #~ "comments": [
+    #~ {
+      #~ "attachments": [],
+      #~ "audit_id": 11175237252635,
+      #~ "author_id": 10981611611675,
+      #~ "body": "plainStringComment2",
+      #~ "created_at": "2022-12-11T21:00:35Z",
+      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
+      #~ "id": 11175237252763,
+      #~ "metadata": {
+        #~ "custom": {},
+        #~ "system": {
+          #~ "latitude": 45.4901,
+          #~ "location": "Seattle, WA, United States",
+          #~ "longitude": -122.3747
+        #~ }
+      #~ },
+      #~ "plain_body": "plainStringComment2",
+      #~ "public": true,
+      #~ "type": "Comment",
+      #~ "via": {
+        #~ "channel": "api",
+        #~ "source": {
+          #~ "from": {},
+          #~ "rel": null,
+          #~ "to": {}
+        #~ }
+      #~ }
+    #~ }
+  #~ ],
+  #~ "count": 1,
+  #~ "next_page": null,
+  #~ "previous_page": null
+#~ }
+    #~ ''',
+    
+    # /api/v2/tickets/999/comments
+    r'''
 Error: {
   "description": "Not found",
   "error": "RecordNotFound"
 }
     ''',
     
-    '''
+    r'''
 {
   "comments": [
     {
@@ -1143,7 +1380,7 @@ Error: {
 }
     ''',
     
-    '''
+    r'''
 {
   "comments": [
     {
@@ -1181,17 +1418,17 @@ Error: {
 }
     ''',
     
-    '''
+    r'''
 {
   "comments": [
     {
       "attachments": [],
-      "audit_id": 11175237252635,
-      "author_id": 10981611611675,
-      "body": "plainStringComment2",
-      "created_at": "2022-12-11T21:00:35Z",
-      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
-      "id": 11175237252763,
+      "audit_id": 11175237309211,
+      "author_id": 11007299217179,
+      "body": "comment1",
+      "created_at": "2022-01-02T06:38:32Z",
+      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">comment1</p></div>",
+      "id": 11175237309339,
       "metadata": {
         "custom": {},
         "system": {
@@ -1200,7 +1437,35 @@ Error: {
           "longitude": -122.3747
         }
       },
-      "plain_body": "plainStringComment2",
+      "plain_body": "comment1",
+      "public": false,
+      "type": "Comment",
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "rel": null,
+          "to": {}
+        }
+      }
+    },
+    {
+      "attachments": [],
+      "audit_id": 11175248028827,
+      "author_id": 10981611611675,
+      "body": "comment2",
+      "created_at": "2022-01-03T06:38:32Z",
+      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">comment2</p></div>",
+      "id": 11175208190363,
+      "metadata": {
+        "custom": {},
+        "system": {
+          "latitude": 45.4901,
+          "location": "Seattle, WA, United States",
+          "longitude": -122.3747
+        }
+      },
+      "plain_body": "comment2",
       "public": true,
       "type": "Comment",
       "via": {
@@ -1213,335 +1478,205 @@ Error: {
       }
     }
   ],
-  "count": 1,
+  "count": 2,
   "next_page": null,
   "previous_page": null
 }
     ''',
     
-    '''
-{
-  "comments": [
-    {
-      "attachments": [],
-      "audit_id": 11175237252635,
-      "author_id": 10981611611675,
-      "body": "plainStringComment2",
-      "created_at": "2022-12-11T21:00:35Z",
-      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
-      "id": 11175237252763,
-      "metadata": {
-        "custom": {},
-        "system": {
-          "latitude": 45.4901,
-          "location": "Seattle, WA, United States",
-          "longitude": -122.3747
-        }
-      },
-      "plain_body": "plainStringComment2",
-      "public": true,
-      "type": "Comment",
-      "via": {
-        "channel": "api",
-        "source": {
-          "from": {},
-          "rel": null,
-          "to": {}
-        }
-      }
-    }
-  ],
-  "count": 1,
-  "next_page": null,
-  "previous_page": null
-}
-    ''',
-    
-    '''
-{
-  "comments": [
-    {
-      "attachments": [],
-      "audit_id": 11175237252635,
-      "author_id": 10981611611675,
-      "body": "plainStringComment2",
-      "created_at": "2022-12-11T21:00:35Z",
-      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
-      "id": 11175237252763,
-      "metadata": {
-        "custom": {},
-        "system": {
-          "latitude": 45.4901,
-          "location": "Seattle, WA, United States",
-          "longitude": -122.3747
-        }
-      },
-      "plain_body": "plainStringComment2",
-      "public": true,
-      "type": "Comment",
-      "via": {
-        "channel": "api",
-        "source": {
-          "from": {},
-          "rel": null,
-          "to": {}
-        }
-      }
-    }
-  ],
-  "count": 1,
-  "next_page": null,
-  "previous_page": null
-}
-    ''',
-    
-    '''
-{
-  "comments": [
-    {
-      "attachments": [],
-      "audit_id": 11175237252635,
-      "author_id": 10981611611675,
-      "body": "plainStringComment2",
-      "created_at": "2022-12-11T21:00:35Z",
-      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
-      "id": 11175237252763,
-      "metadata": {
-        "custom": {},
-        "system": {
-          "latitude": 45.4901,
-          "location": "Seattle, WA, United States",
-          "longitude": -122.3747
-        }
-      },
-      "plain_body": "plainStringComment2",
-      "public": true,
-      "type": "Comment",
-      "via": {
-        "channel": "api",
-        "source": {
-          "from": {},
-          "rel": null,
-          "to": {}
-        }
-      }
-    }
-  ],
-  "count": 1,
-  "next_page": null,
-  "previous_page": null
-}
-    ''',
-    
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
+    r'''
     xxxxxx
     ''',
     
-    '''
-    xxxxxx
-    ''',
-    
-    '''
-    xxxxxx
-    ''',
-    
-    '''
-    xxxxxx
-    ''',
-    
-    '''
-    xxxxxx
-    ''',
-    
-    '''
+    r'''
     xxxxxx
     ''',
     
