@@ -141,9 +141,11 @@ def go4TicketsCreateMany():
             "created_at": "2022-01-03T06:38:32.399Z",
             "body": "comment2",
             "public": true
+            ### test missing authorid: author will be api-user
           }
         ]
-      }, {
+      },
+      {
         "subject": "ticket2",
         "created_at": "2022-01-01T06:38:32.399Z",
         "requester": {"name":"utest4inline", "email": "utest4inline@a.com"}, ### inline user creation
@@ -151,18 +153,24 @@ def go4TicketsCreateMany():
         "comment": {"body": "plainStringComment1"} ### comment syntax shortcut, comment not comments
         ### status default to open
         ### comments default to public=true
+        ### test missing authorid: author will be utest4inline
       },
       {
         "comment": "plainStringComment2", ### comment syntax shortcut, string data type
         "tags": ["tag1", "tag2", "%TAG_REMOVED_BY_TRIGGER%"] ### we'll remove it
+        ### test missing authorid: author will be api-user
       },
       {
         "requester_id": %USER2%,
         "submitter_id": %USER3%,
         "comments": [{"body": "testAuthorId1"}]
+        ### test missing authorid: author will be user2
       },
       {
-        "comments": [{"body": "testAuthorId2", "author_id": "%USER1%"}, {"body": "testAuthorId3"}]
+        "comments": [
+            ### careful, must add a created_at or the created_at will be the same causing the order to be arbitrary
+            {"body": "testAuthorId2", "author_id": "%USER1%", "created_at": "2022-03-01T06:38:32.399Z"}, ### test missing authorid: author will be user1
+            {"body": "testAuthorId3"}] ### test missing authorid: author will be api-user
       },
       {
         "requester_id": %USER1%,
@@ -306,8 +314,7 @@ def go6TicketsShowComments():
     testComment(result2['comments'][0], authorId=stateIds['user4inline'], text='plainStringComment1')
     testComment(result3['comments'][0], authorId=stateIds['admin'], text='plainStringComment2')
     testComment(result1['comments'][0], authorId=stateIds['user2'], text='comment1', public=False)
-    testComment(result1['comments'][1], authorId=stateIds['user1'], text='comment2')
-    return
+    testComment(result1['comments'][1], authorId=stateIds['admin'], text='comment2')
 
     ############## Test default authors ###################
     result1 = sendGet(f'/api/v2/tickets/{stateIds["ticket1"]}/comments')
@@ -319,7 +326,7 @@ def go6TicketsShowComments():
     assertEq(stateIds['user2'], result1['comments'][0]['author_id'])
     #           requester set, author not set but prev is (comment2)
     assertEq('comment2', result1['comments'][1]['plain_body'])
-    assertEq(stateIds['user1'], result1['comments'][1]['author_id'])
+    assertEq(stateIds['admin'], result1['comments'][1]['author_id'])
     #           requester set, author not set (testAuthorId1)
     assertEq('testAuthorId1', result4['comments'][0]['plain_body'])
     assertEq(stateIds['user2'], result4['comments'][0]['author_id'])

@@ -30,7 +30,7 @@ simulatedResponses = [
     Error: missing email
     ''',
     
-    # use r''' instead of ''' so that 
+    # use r''' instead of ''' so that \" preserves the \
     r'''
 {
   "job_status": {
@@ -1099,241 +1099,6 @@ simulatedResponses = [
 }
     ''',
     
-    #~ '''
-#~ Error: {
-  #~ "description": "Not found",
-  #~ "error": "RecordNotFound"
-#~ }
-    #~ ''',
-    
-    #~ '''
-#~ {
-  #~ "comments": [
-    #~ {
-      #~ "attachments": [],
-      #~ "audit_id": 11175222974363,
-      #~ "author_id": 11096765374107,
-      #~ "body": "plainStringComment1",
-      #~ "created_at": "2022-12-11T21:00:36Z",
-      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment1</p></div>",
-      #~ "id": 11175222974491,
-      #~ "metadata": {
-        #~ "custom": {},
-        #~ "system": {
-          #~ "latitude": 45.4901,
-          #~ "location": "Seattle, WA, United States",
-          #~ "longitude": -122.3747
-        #~ }
-      #~ },
-      #~ "plain_body": "plainStringComment1",
-      #~ "public": true,
-      #~ "type": "Comment",
-      #~ "via": {
-        #~ "channel": "api",
-        #~ "source": {
-          #~ "from": {},
-          #~ "rel": null,
-          #~ "to": {}
-        #~ }
-      #~ }
-    #~ }
-  #~ ],
-  #~ "count": 1,
-  #~ "next_page": null,
-  #~ "previous_page": null
-#~ }
-    #~ ''',
-    
-    #~ '''
-#~ {
-  #~ "comments": [
-    #~ {
-      #~ "attachments": [],
-      #~ "audit_id": 11175237252635,
-      #~ "author_id": 10981611611675,
-      #~ "body": "plainStringComment2",
-      #~ "created_at": "2022-12-11T21:00:35Z",
-      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
-      #~ "id": 11175237252763,
-      #~ "metadata": {
-        #~ "custom": {},
-        #~ "system": {
-          #~ "latitude": 45.4901,
-          #~ "location": "Seattle, WA, United States",
-          #~ "longitude": -122.3747
-        #~ }
-      #~ },
-      #~ "plain_body": "plainStringComment2",
-      #~ "public": true,
-      #~ "type": "Comment",
-      #~ "via": {
-        #~ "channel": "api",
-        #~ "source": {
-          #~ "from": {},
-          #~ "rel": null,
-          #~ "to": {}
-        #~ }
-      #~ }
-    #~ }
-  #~ ],
-  #~ "count": 1,
-  #~ "next_page": null,
-  #~ "previous_page": null
-#~ }
-    #~ ''',
-    
-    #~ '''
-#~ {
-  #~ "comments": [
-    #~ {
-      #~ "attachments": [],
-      #~ "audit_id": 11175237252635,
-      #~ "author_id": 10981611611675,
-      #~ "body": "plainStringComment2",
-      #~ "created_at": "2022-12-11T21:00:35Z",
-      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
-      #~ "id": 11175237252763,
-      #~ "metadata": {
-        #~ "custom": {},
-        #~ "system": {
-          #~ "latitude": 45.4901,
-          #~ "location": "Seattle, WA, United States",
-          #~ "longitude": -122.3747
-        #~ }
-      #~ },
-      #~ "plain_body": "plainStringComment2",
-      #~ "public": true,
-      #~ "type": "Comment",
-      #~ "via": {
-        #~ "channel": "api",
-        #~ "source": {
-          #~ "from": {},
-          #~ "rel": null,
-          #~ "to": {}
-        #~ }
-      #~ }
-    #~ }
-  #~ ],
-  #~ "count": 1,
-  #~ "next_page": null,
-  #~ "previous_page": null
-#~ }
-    #~ ''',
-    
-    #~ '''
-#~ {
-  #~ "comments": [
-    #~ {
-      #~ "attachments": [],
-      #~ "audit_id": 11175237252635,
-      #~ "author_id": 10981611611675,
-      #~ "body": "plainStringComment2",
-      #~ "created_at": "2022-12-11T21:00:35Z",
-      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
-      #~ "id": 11175237252763,
-      #~ "metadata": {
-        #~ "custom": {},
-        #~ "system": {
-          #~ "latitude": 45.4901,
-          #~ "location": "Seattle, WA, United States",
-          #~ "longitude": -122.3747
-        #~ }
-      #~ },
-      #~ "plain_body": "plainStringComment2",
-      #~ "public": true,
-      #~ "type": "Comment",
-      #~ "via": {
-        #~ "channel": "api",
-        #~ "source": {
-          #~ "from": {},
-          #~ "rel": null,
-          #~ "to": {}
-        #~ }
-      #~ }
-    #~ }
-  #~ ],
-  #~ "count": 1,
-  #~ "next_page": null,
-  #~ "previous_page": null
-#~ }
-    #~ ''',
-    
-    #~ '''
-#~ {
-  #~ "comments": [
-    #~ {
-      #~ "attachments": [],
-      #~ "audit_id": 11175237252635,
-      #~ "author_id": 10981611611675,
-      #~ "body": "plainStringComment2",
-      #~ "created_at": "2022-12-11T21:00:35Z",
-      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
-      #~ "id": 11175237252763,
-      #~ "metadata": {
-        #~ "custom": {},
-        #~ "system": {
-          #~ "latitude": 45.4901,
-          #~ "location": "Seattle, WA, United States",
-          #~ "longitude": -122.3747
-        #~ }
-      #~ },
-      #~ "plain_body": "plainStringComment2",
-      #~ "public": true,
-      #~ "type": "Comment",
-      #~ "via": {
-        #~ "channel": "api",
-        #~ "source": {
-          #~ "from": {},
-          #~ "rel": null,
-          #~ "to": {}
-        #~ }
-      #~ }
-    #~ }
-  #~ ],
-  #~ "count": 1,
-  #~ "next_page": null,
-  #~ "previous_page": null
-#~ }
-    #~ ''',
-    
-    #~ '''
-#~ {
-  #~ "comments": [
-    #~ {
-      #~ "attachments": [],
-      #~ "audit_id": 11175237252635,
-      #~ "author_id": 10981611611675,
-      #~ "body": "plainStringComment2",
-      #~ "created_at": "2022-12-11T21:00:35Z",
-      #~ "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
-      #~ "id": 11175237252763,
-      #~ "metadata": {
-        #~ "custom": {},
-        #~ "system": {
-          #~ "latitude": 45.4901,
-          #~ "location": "Seattle, WA, United States",
-          #~ "longitude": -122.3747
-        #~ }
-      #~ },
-      #~ "plain_body": "plainStringComment2",
-      #~ "public": true,
-      #~ "type": "Comment",
-      #~ "via": {
-        #~ "channel": "api",
-        #~ "source": {
-          #~ "from": {},
-          #~ "rel": null,
-          #~ "to": {}
-        #~ }
-      #~ }
-    #~ }
-  #~ ],
-  #~ "count": 1,
-  #~ "next_page": null,
-  #~ "previous_page": null
-#~ }
-    #~ ''',
-    
     # /api/v2/tickets/999/comments
     r'''
 Error: {
@@ -1484,6 +1249,465 @@ Error: {
 }
     ''',
     
+   
+    # second time getting ticket 1
+    r'''
+    {
+  "comments": [
+    {
+      "attachments": [],
+      "audit_id": 11175237309211,
+      "author_id": 11007299217179,
+      "body": "comment1",
+      "created_at": "2022-01-02T06:38:32Z",
+      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">comment1</p></div>",
+      "id": 11175237309339,
+      "metadata": {
+        "custom": {},
+        "system": {
+          "latitude": 45.4901,
+          "location": "Seattle, WA, United States",
+          "longitude": -122.3747
+        }
+      },
+      "plain_body": "comment1",
+      "public": false,
+      "type": "Comment",
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "rel": null,
+          "to": {}
+        }
+      }
+    },
+    {
+      "attachments": [],
+      "audit_id": 11175248028827,
+      "author_id": 10981611611675,
+      "body": "comment2",
+      "created_at": "2022-01-03T06:38:32Z",
+      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">comment2</p></div>",
+      "id": 11175208190363,
+      "metadata": {
+        "custom": {},
+        "system": {
+          "latitude": 45.4901,
+          "location": "Seattle, WA, United States",
+          "longitude": -122.3747
+        }
+      },
+      "plain_body": "comment2",
+      "public": true,
+      "type": "Comment",
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "rel": null,
+          "to": {}
+        }
+      }
+    }
+  ],
+  "count": 2,
+  "next_page": null,
+  "previous_page": null
+}
+    ''',
+    
+    r'''
+    {
+  "comments": [
+    {
+      "attachments": [],
+      "audit_id": 11175237252635,
+      "author_id": 10981611611675,
+      "body": "plainStringComment2",
+      "created_at": "2022-12-11T21:00:35Z",
+      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">plainStringComment2</p></div>",
+      "id": 11175237252763,
+      "metadata": {
+        "custom": {},
+        "system": {
+          "latitude": 45.4901,
+          "location": "Seattle, WA, United States",
+          "longitude": -122.3747
+        }
+      },
+      "plain_body": "plainStringComment2",
+      "public": true,
+      "type": "Comment",
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "rel": null,
+          "to": {}
+        }
+      }
+    }
+  ],
+  "count": 1,
+  "next_page": null,
+  "previous_page": null
+}
+    ''',
+    
+    r'''
+    {
+  "comments": [
+    {
+      "attachments": [],
+      "audit_id": 11175231713307,
+      "author_id": 11007299217179,
+      "body": "testAuthorId1",
+      "created_at": "2022-12-11T21:00:36Z",
+      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">testAuthorId1</p></div>",
+      "id": 11175231713435,
+      "metadata": {
+        "custom": {},
+        "system": {
+          "latitude": 45.4901,
+          "location": "Seattle, WA, United States",
+          "longitude": -122.3747
+        }
+      },
+      "plain_body": "testAuthorId1",
+      "public": true,
+      "type": "Comment",
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "rel": null,
+          "to": {}
+        }
+      }
+    }
+  ],
+  "count": 1,
+  "next_page": null,
+  "previous_page": null
+}
+    ''',
+    
+    # rearranged comments now that we know created_at time needs to be set when importing comments
+    r'''
+    {
+  "comments": [
+    {
+      "attachments": [],
+      "audit_id": 11175247939867,
+      "author_id": 11007294636571,
+      "body": "testAuthorId2",
+      "created_at": "2022-12-11T21:00:35Z",
+      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">testAuthorId2</p></div>",
+      "id": 11175247939995,
+      "metadata": {
+        "custom": {},
+        "system": {
+          "latitude": 45.4901,
+          "location": "Seattle, WA, United States",
+          "longitude": -122.3747
+        }
+      },
+      "plain_body": "testAuthorId2",
+      "public": true,
+      "type": "Comment",
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "rel": null,
+          "to": {}
+        }
+      }
+    },
+
+    {
+      "attachments": [],
+      "audit_id": 11175231635355,
+      "author_id": 10981611611675,
+      "body": "testAuthorId3",
+      "created_at": "2022-12-11T21:00:35Z",
+      "html_body": "<div class=\"zd-comment\" dir=\"auto\"><p dir=\"auto\">testAuthorId3</p></div>",
+      "id": 11175208108699,
+      "metadata": {
+        "custom": {},
+        "system": {
+          "latitude": 45.4901,
+          "location": "Seattle, WA, United States",
+          "longitude": -122.3747
+        }
+      },
+      "plain_body": "testAuthorId3",
+      "public": true,
+      "type": "Comment",
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "rel": null,
+          "to": {}
+        }
+      }
+    }
+    
+  ],
+  "count": 2,
+  "next_page": null,
+  "previous_page": null
+}
+    ''',
+    
+    r'''
+    {
+  "count": 3,
+  "next_page": null,
+  "previous_page": null,
+  "tickets": [
+    {
+      "allow_attachments": true,
+      "allow_channelback": false,
+      "assignee_id": 10981611611675,
+      "brand_id": 10981621621915,
+      "collaborator_ids": [],
+      "created_at": "2022-12-11T21:00:35Z",
+      "custom_fields": [
+        {
+          "id": 10993238892315,
+          "value": null
+        },
+        {
+          "id": 10993199398427,
+          "value": null
+        },
+        {
+          "id": 11130845293467,
+          "value": null
+        }
+      ],
+      "custom_status_id": 10981595891227,
+      "description": "testAuthorId2",
+      "due_at": null,
+      "email_cc_ids": [],
+      "external_id": null,
+      "fields": [
+        {
+          "id": 10993238892315,
+          "value": null
+        },
+        {
+          "id": 10993199398427,
+          "value": null
+        },
+        {
+          "id": 11130845293467,
+          "value": null
+        }
+      ],
+      "follower_ids": [],
+      "followup_ids": [],
+      "forum_topic_id": null,
+      "group_id": 10981550950427,
+      "has_incidents": false,
+      "id": 15,
+      "is_public": true,
+      "organization_id": 10981567145627,
+      "priority": null,
+      "problem_id": null,
+      "raw_subject": null,
+      "recipient": null,
+      "requester_id": 10981611611675,
+      "satisfaction_rating": null,
+      "sharing_agreement_ids": [],
+      "status": "open",
+      "subject": null,
+      "submitter_id": 10981611611675,
+      "tags": [],
+      "type": null,
+      "updated_at": "2022-12-11T21:00:35Z",
+      "url": "https://exampleendpoint.zendesk.com/api/v2/tickets/15.json",
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "rel": null,
+          "to": {}
+        }
+      }
+    },
+    {
+      "allow_attachments": true,
+      "allow_channelback": false,
+      "assignee_id": 10981611611675,
+      "brand_id": 10981621621915,
+      "collaborator_ids": [],
+      "created_at": "2022-12-11T21:00:35Z",
+      "custom_fields": [
+        {
+          "id": 10993238892315,
+          "value": null
+        },
+        {
+          "id": 10993199398427,
+          "value": null
+        },
+        {
+          "id": 11130845293467,
+          "value": null
+        }
+      ],
+      "custom_status_id": 10981595891227,
+      "description": "plainStringComment2",
+      "due_at": null,
+      "email_cc_ids": [],
+      "external_id": null,
+      "fields": [
+        {
+          "id": 10993238892315,
+          "value": null
+        },
+        {
+          "id": 10993199398427,
+          "value": null
+        },
+        {
+          "id": 11130845293467,
+          "value": null
+        }
+      ],
+      "follower_ids": [],
+      "followup_ids": [],
+      "forum_topic_id": null,
+      "group_id": 10981550950427,
+      "has_incidents": false,
+      "id": 16,
+      "is_public": true,
+      "organization_id": 10981567145627,
+      "priority": null,
+      "problem_id": null,
+      "raw_subject": null,
+      "recipient": null,
+      "requester_id": 10981611611675,
+      "satisfaction_rating": null,
+      "sharing_agreement_ids": [],
+      "status": "open",
+      "subject": null,
+      "submitter_id": 10981611611675,
+      "tags": [
+        "tag-to-replace-has-processed",
+        "tag1",
+        "tag2"
+      ],
+      "type": null,
+      "updated_at": "2022-12-11T21:00:35Z",
+      "url": "https://exampleendpoint.zendesk.com/api/v2/tickets/16.json",
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "rel": null,
+          "to": {}
+        }
+      }
+    },
+    {
+      "allow_attachments": true,
+      "allow_channelback": false,
+      "assignee_id": 10981611611675,
+      "brand_id": 10981621621915,
+      "collaborator_ids": [],
+      "created_at": "2022-12-11T21:00:36Z",
+      "custom_fields": [
+        {
+          "id": 10993238892315,
+          "value": null
+        },
+        {
+          "id": 10993199398427,
+          "value": null
+        },
+        {
+          "id": 11130845293467,
+          "value": null
+        }
+      ],
+      "custom_status_id": 10981595891227,
+      "description": "testAuthorId1",
+      "due_at": null,
+      "email_cc_ids": [],
+      "external_id": null,
+      "fields": [
+        {
+          "id": 10993238892315,
+          "value": null
+        },
+        {
+          "id": 10993199398427,
+          "value": null
+        },
+        {
+          "id": 11130845293467,
+          "value": null
+        }
+      ],
+      "follower_ids": [],
+      "followup_ids": [],
+      "forum_topic_id": null,
+      "group_id": 10981550950427,
+      "has_incidents": false,
+      "id": 19,
+      "is_public": true,
+      "organization_id": null,
+      "priority": null,
+      "problem_id": null,
+      "raw_subject": null,
+      "recipient": null,
+      "requester_id": 11007299217179,
+      "satisfaction_rating": null,
+      "sharing_agreement_ids": [],
+      "status": "open",
+      "subject": null,
+      "submitter_id": 11007314541595,
+      "tags": [],
+      "type": null,
+      "updated_at": "2022-12-11T21:00:36Z",
+      "url": "https://exampleendpoint.zendesk.com/api/v2/tickets/19.json",
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "rel": null,
+          "to": {}
+        }
+      }
+    }
+  ]
+}
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
     r'''
     xxxxxx
     ''',
@@ -1504,6 +1728,103 @@ Error: {
     xxxxxx
     ''',
     
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
+    
+    r'''
+    xxxxxx
+    ''',
     r'''
     xxxxxx
     ''',

@@ -169,10 +169,14 @@ def assertSubject(expected, got):
     assertEq(expected, got)
 
 def testComment(c, authorId, text, public=True):
-    confirmSet(c, 'id|created_at|updated_at'.split('|'))
+    if replayRecordedResponses:
+        confirmSet(c, 'id|created_at'.split('|'))
+    else:
+        confirmSet(c, 'id|created_at|updated_at'.split('|'))
+        assertEq(text, c['html_body'])
+
     assertEq('Comment', c['type'])
     assertEq(text, c['body'])
-    assertEq(text, c['html_body'])
     assertEq(text, c['plain_body'])
     assertEq(public, c['public'])
     assertEq(authorId, c['author_id'])

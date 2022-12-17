@@ -30,7 +30,7 @@ export function allowShortcutStringComment(obj) {
     }
 }
 
-export function transformIncomingCommentIntoInternal(globalState, obj, ticketRequester) {
+export function transformIncomingCommentIntoInternal(globalState, obj, fallbackAuthorId) {
     assert(!obj.id, `new comment - cannot specify id`)
     if (obj.uploads || obj.attachments) {
         throw new Error('we do not yet support attachments')
@@ -45,7 +45,7 @@ export function transformIncomingCommentIntoInternal(globalState, obj, ticketReq
         html_body: obj.body || obj.html_body,
         plain_body: obj.body || obj.html_body, // just for simplicity
         public: obj.public === undefined ? true : obj.public,
-        author_id: normalizeId(obj.author_id || ticketRequester),
+        author_id: normalizeId(obj.author_id || fallbackAuthorId),
         attachments: []
     }
 }

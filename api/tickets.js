@@ -56,10 +56,12 @@ export function apiTicketsImportCreateMany(payload) {
             // Zendesk allows this shorthand
             ticket.comments = [ticket.comment]
         }
-        for (let comment of (ticket.comments||[])) {
+
+        for (let [j, comment] of (ticket.comments||[]).entries()) {
             comment = allowShortcutStringComment(comment)
             allowInlineNewUser(globalState, comment, 'author', 'author_id')
-            const c = transformIncomingCommentIntoInternal(globalState, comment, normalizeId(resultTicket.requester_id))
+            const fallbackAuthorId = j === 0 ? normalizeId(resultTicket.requester_id) : getDefaultAdminId() // Tricky zendesk logic... this seems to match what happens
+            const c = transformIncomingCommentIntoInternal(globalState, comment, fallbackAuthorId)
             insertPersistedComment(globalState, c)
             resultTicket.comment_ids.push(c.id)
             // Because this is 'import create many', not 'standard create many', skip triggers
@@ -105,7 +107,7 @@ export function apiTicketUpdateMany(payload) {
         }
 
         updatePersistedTicket(globalState, resultTicket)
-        response.push({index: index, id: resultTicket.id, "action":"update","status":"Updated","success":true})
+        response.push({index: index, id: resultTicket.id, "action":"update", "status":"Updated", "success":true})
     }
 
     const newJobId = addJobResultToMemory(globalState, response)
