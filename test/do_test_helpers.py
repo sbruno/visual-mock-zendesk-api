@@ -1,10 +1,14 @@
 
 
-from ben_python_common import *
+import sys
 import requests
 import json
 import urllib.parse
 import do_test_recorded
+sys.path.append('bn_python_common.zip')
+sys.path.append('test/bn_python_common.zip')
+from bn_python_common import *
+
 
 configText = files.readall('configs.json')
 configs = json.loads(configText)
