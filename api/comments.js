@@ -2,7 +2,9 @@ import assert from "assert";
 import { getGlobalState } from "../persist.js";
 import { generateCommentId, getCurrentTimestamp, normalizeId } from "./helpers.js";
 
-
+/**
+ * Endpoint to get comment content for a ticket
+ */
 export function apiGetTicketComments(ticketId) {
     const globalState = getGlobalState()
     const ticket = globalState.persistedState.tickets[ticketId]
@@ -10,16 +12,19 @@ export function apiGetTicketComments(ticketId) {
         throw new Error('ticket not found')
     }
 
-    // don't implement pagination yet
     const results = []
     for (let commentId of ticket.comment_ids) {
         commentId = normalizeId(commentId)
         const comment = globalState.persistedState.comments[commentId]
         results.push(comment)
     }
+
     return { comments:results, otherPagesRemain:false, next_page:undefined, count: results.length}
 }
 
+/**
+ * Allow shorter syntax, { comment: 'abc' } as a shortcut for { comment: {body: 'abc' } }
+ */
 export function allowShortcutStringComment(obj) {
     if (typeof obj === 'string') {
         return {
@@ -30,6 +35,9 @@ export function allowShortcutStringComment(obj) {
     }
 }
 
+/**
+ * From incoming data
+ */
 export function transformIncomingCommentIntoInternal(globalState, obj, fallbackAuthorId) {
     assert(!obj.id, `new comment - cannot specify id`)
     if (obj.uploads || obj.attachments) {
@@ -46,6 +54,6 @@ export function transformIncomingCommentIntoInternal(globalState, obj, fallbackA
         plain_body: obj.body || obj.html_body, // just for simplicity
         public: obj.public === undefined ? true : obj.public,
         author_id: normalizeId(obj.author_id || fallbackAuthorId),
-        attachments: []
+        attachments: [] // not yet implemented
     }
 }

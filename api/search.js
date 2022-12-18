@@ -4,6 +4,9 @@ import { getGlobalState } from "../persist.js"
 import { normalizeId } from "./helpers.js"
 import { getCustomFldVal } from "./customfields.js"
 
+/**
+ * xxx
+ */
 class BaseFilter {
     includeThese = []
     excludeThese = []
@@ -12,6 +15,9 @@ class BaseFilter {
     }
 }
 
+/**
+ * xxx
+ */
 class FilterStatus extends BaseFilter {
     getFilter() {
         if (this.includeThese.length && this.excludeThese.length) {
@@ -28,6 +34,9 @@ class FilterStatus extends BaseFilter {
     }
 }
 
+/**
+ * xxx
+ */
 class FilterByTag extends BaseFilter {
     getFilter() {
         if (this.includeThese.length && this.excludeThese.length) {
@@ -54,6 +63,9 @@ class FilterByTag extends BaseFilter {
     }
 }
 
+/**
+ * xxx
+ */
 class FilterCustomField extends BaseFilter {
     constructor(id) {
         super()
@@ -80,6 +92,9 @@ class FilterCustomField extends BaseFilter {
     }
 }
 
+/**
+ * xxx
+ */
 export function apiSearch(query, sortBy, sortOrder) {
     const globalState = getGlobalState()
     sortBy = sortBy || 'created_at'

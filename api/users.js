@@ -5,6 +5,9 @@ import { addJobResultToMemory, getCurrentTimestamp,  generateUserId, normalizeId
 import { renderPendingJob } from "./jobresults.js";
 import { insertPersistedUser, validateInternalUser } from "./schema.js";
 
+/**
+ * xxx
+ */
 export function apiUsersShowMany(payload) {
     const globalState = getGlobalState()
     const ids = payload.split(',')
@@ -24,6 +27,9 @@ export function apiUsersShowMany(payload) {
     return {users: result}
 }
 
+/**
+ * xxx
+ */
 export function apiUsersCreateMany(payload) {
     const globalState = getGlobalStateCopy()
     payload = payload['users']
@@ -46,12 +52,17 @@ export function apiUsersCreateMany(payload) {
 }
 
 
-// /api/v2/users/search?query=email:encodeURIComponent(email)
+/**
+ * /api/v2/users/search?query=email:encodeURIComponent(email)
+ */
 export function apiUsersSearchByEmail(email) {
     const globalState = getGlobalState()
     return usersSearchByEmailImpl(globalState, email)
 }
 
+/**
+ * xxx
+ */
 export function usersSearchByEmailImpl(globalState, email) {
     const allUsers = globalState.persistedState.users
     let results = []

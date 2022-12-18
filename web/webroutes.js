@@ -3,10 +3,15 @@ import { getGlobalState, onLoad, resetPersistedState } from "../persist.js"
 import { renderTicketComment, renderTicketComments, renderTicketProps } from "./render-object-props.js";
 import lodash from 'lodash';
 
+/**
+ * Show html UI for the web endpoints.
+ * Nunjucks expands the template with the given parameters.
+ */
 export function webRoutes(app) {
     app.get('/', function(req, res) {
         res.redirect('/web/tickets-open');
       })
+
     app.get('/web/tickets-open', function(req, res) {
         let data = {
           title: 'Open tickets',
@@ -15,6 +20,7 @@ export function webRoutes(app) {
       
         res.render('homeview.njk', data)
       })
+
     app.get('/web/tickets-resolved', function(req, res) {
       let data = {
         title: 'Resolved tickets',
@@ -23,6 +29,7 @@ export function webRoutes(app) {
     
       res.render('homeview.njk', data)
       })
+
     app.get('/web/tickets-new', function(req, res) {
       const globalState = getGlobalState()
       let data = {
@@ -32,6 +39,7 @@ export function webRoutes(app) {
     
       res.render('ticketnew.njk', data)
       })
+
     app.get('/agent/tickets/:id', function(req, res) {
       const globalState = getGlobalState()
       if (!req.params.id || !parseInt(req.params.id)) {
@@ -48,6 +56,10 @@ export function webRoutes(app) {
       })
 }
 
+/**
+ * Take a list of tickets and call renderTicketProps on them, to get everything needed to display to the user.
+ * For example, turn the list of the comment ids into the actual comment text, and turn the requester id into the requester name. 
+ */
 function getRenderedTickets(req, res, ticketFilter) {
       const globalState = getGlobalState()
       const results = Object.values(globalState.persistedState.tickets).filter(ticketFilter).map(renderTicketProps)

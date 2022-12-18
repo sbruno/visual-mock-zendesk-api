@@ -8,24 +8,14 @@ import { getDefaultAdminId } from "../persist.js";
 
 export const Statuses = ["new" , "open" , "pending" , "hold" , "solved" , "closed"]
 
-function checkIsoDateOrThrow(s) {
-    if (!s) {
-        throw new Error('not an iso date ' + s)
-    } else if (!s.includes('T')) {
-        throw new Error('does not contain a T, might not be an iso date' + s)
-    }
-
-    try {
-        const d = new Date(s)
-    } catch(e) {
-        throw new Error('failed to parse iso date ' + s + e)
-    }
-}
 
 // These functions ensure that the data we persist to storage has exactly the correct shape.
 // We can also rely on them to cause a thrown error if there's missing/malformed user input.
 
-// User.ResponseModel
+// 
+/**
+ * (See TypeScript's User.ResponseModel)
+ */
 export function validateInternalUser(obj) {
     let schema = yup.object({
         id: yup.number().required().positive().integer(),
@@ -39,6 +29,9 @@ export function validateInternalUser(obj) {
 }
 
 // Ticket.ResponseModel
+/**
+ * xxx
+ */
 export function validateInternalTicket(obj) {
     // if you pass a number it will be cast to a string unless you mark the field as strict()
     let schema = yup.object({
@@ -85,6 +78,7 @@ export function validateInternalTicket(obj) {
         // comment_count: not yet implemented
         comment_ids: yup.array().of(yup.number()).required(), // not present in Zendesk
     }).noUnknown(true).required();
+
     doValidateForInternal(schema, obj) 
     checkIsoDateOrThrow(obj.created_at)
     checkIsoDateOrThrow(obj.updated_at)
@@ -96,6 +90,9 @@ export function validateInternalTicket(obj) {
 }
 
 // Comment.ResponseModel
+/**
+ * xxx
+ */
 export function validateInternalComment(obj) {
     let schema = yup.object({
         id: yup.number().required().positive().integer(),
@@ -113,12 +110,16 @@ export function validateInternalComment(obj) {
         // via: not yet implemented
         // metadata: not yet implemented
     }).noUnknown(true).required();
+
     doValidateForInternal(schema, obj) 
     checkIsoDateOrThrow(obj.created_at)
     checkIsoDateOrThrow(obj.updated_at)
     return obj
 }
 
+/**
+ * xxx
+ */
 export function insertPersistedUser(globalState, obj) {
     validateInternalUser(obj)
     emailCannotExistTwice(globalState, obj.email)
@@ -126,24 +127,53 @@ export function insertPersistedUser(globalState, obj) {
     globalState.persistedState.users[obj.id] = obj
 }
 
+/**
+ * xxx
+ */
 export function insertPersistedComment(globalState, obj) {
     validateInternalComment(obj)
     assert(!globalState.persistedState.comments[obj.id], 'comment w same id already exists')
     globalState.persistedState.comments[obj.id] = obj
 }
 
+/**
+ * xxx
+ */
 export function insertPersistedTicket(globalState, obj) {
     validateInternalTicket(obj)
     assert(!globalState.persistedState.tickets[obj.id], 'ticket w same id already exists')
     globalState.persistedState.tickets[obj.id] = obj
 }
 
+/**
+ * xxx
+ */
 export function updatePersistedTicket(globalState, obj) {
     validateInternalTicket(obj)
     assert(globalState.persistedState.tickets[obj.id], 'ticket w same id not exists')
     globalState.persistedState.tickets[obj.id] = obj
 }
 
+/**
+ * xxx
+ */
+function checkIsoDateOrThrow(s) {
+    if (!s) {
+        throw new Error('not an iso date ' + s)
+    } else if (!s.includes('T')) {
+        throw new Error('does not contain a T, might not be an iso date' + s)
+    }
+
+    try {
+        const d = new Date(s)
+    } catch(e) {
+        throw new Error('failed to parse iso date ' + s + e)
+    }
+}
+
+/**
+ * xxx
+ */
 function emailCannotExistTwice(globalState, email) {
     const allUsers = globalState.persistedState.users
     for (let userId in allUsers) {
@@ -154,6 +184,9 @@ function emailCannotExistTwice(globalState, email) {
     }
 }
 
+/**
+ * xxx
+ */
 function doValidateForInternal(schema, obj) {
     // stripUnknown: throws if any required are not there
     // strict: do not 'parse', important because internally we want to enforce the int/str distinction,

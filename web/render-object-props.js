@@ -2,8 +2,9 @@ import { getGlobalState } from "../persist.js"
 import { renderCustomFields } from "../api/customfields.js"
 import lodash from 'lodash';
 
-
-
+/**
+ * Take a ticket object and add some properties, to get everything needed to display to the user.
+ */
 export function renderTicketProps(t) {
     t = {...t}
     t.custom_fields_rendered = renderCustomFields(t)
@@ -15,15 +16,22 @@ export function renderTicketProps(t) {
     return t
 }
 
+/**
+ * Take a user id and add get a rendered user name.
+ */
 export function renderUsername(userId, fld) {
     const globalState = getGlobalState()
     const user = globalState.persistedState.users[userId]
     if (!user) {
         return '<user not found>'
     }
+
     return user[fld]
 }
 
+/**
+ * Take an iso-formatted date and show it in a more friendly way.
+ */
 export function renderDate(s) {
     try {
         var d = new Date(s)
@@ -33,6 +41,9 @@ export function renderDate(s) {
     }
 }
 
+/**
+ * Get the comments on a ticket, to get everything needed to display to the user.
+ */
 export function renderTicketComments(tId) {
     const globalState = getGlobalState()
     const t = globalState.persistedState.tickets[tId]
@@ -44,6 +55,9 @@ export function renderTicketComments(tId) {
     return result
 }
 
+/**
+ * Take a comment object and add some properties, to get everything needed to display to the user.
+ */
 export function renderTicketComment(cId) {
     const globalState = getGlobalState()
     let c = globalState.persistedState.comments[cId]

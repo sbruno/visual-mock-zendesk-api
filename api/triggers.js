@@ -1,6 +1,8 @@
 
 
-
+/**
+ * xxx
+ */
 export function runTriggersOnNewCommentPosted(globalState, ticket, newComment) {
     const triggers = globalState.globalConfigs.customTriggers;
     if (triggers) {
@@ -17,6 +19,9 @@ export function runTriggersOnNewCommentPosted(globalState, ticket, newComment) {
     }
 }
 
+/**
+ * xxx
+ */
 function removeTagWhenPublicCommentPosted(globalState, ticket, newComment, value) {
     if (newComment.public) {
         if (ticket.tags?.includes(value)) {
@@ -26,6 +31,9 @@ function removeTagWhenPublicCommentPosted(globalState, ticket, newComment, value
     }
 }
 
+/**
+ * xxx
+ */
 function openPostWhenPublicCommentContainingTextPosted(globalState, ticket, newComment, value) {
     if (newComment.public && (newComment.plain_body?.includes(value) ||newComment.body?.includes(value))) {
         console.log('Running trigger openPostWhenPublicCommentContainingTextPosted')

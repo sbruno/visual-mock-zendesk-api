@@ -2,8 +2,8 @@
 from do_test_helpers import *
 
 def go1UsersCreateMany():
-    #~ if not getInputBool('OK to run this test, which will reset all tickets+users?'):
-        #~ assertTrue(False, 'cancelling test')
+    if not getInputBool('OK to run this test, which will reset all tickets+users?'):
+        assertTrue(False, 'cancelling test')
     
     ############## Reset state ###################
     sendPost('/api/delete_all', {})

@@ -14,6 +14,9 @@ import { intCustomFields } from "./customfields.js";
 // let you create a new user inline, for example instead of providing
 // requester_id: 234, providing requester: { name: 'name', email: 'example@example.com'}
 // this function implements this feature.
+/**
+ * xxx
+ */
 function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
     if (obj[keyToUse]) {
         const em = obj[keyToUse].email
@@ -43,6 +46,9 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
     }
 }
 
+/**
+ * xxx
+ */
 export function apiTicketsImportCreateMany(payload) {
     // because this is an 'import' api, we allow setting createdat
     const globalState = getGlobalStateCopy()
@@ -78,6 +84,9 @@ export function apiTicketsImportCreateMany(payload) {
     return finalResponse
 }
 
+/**
+ * xxx
+ */
 export function apiTicketUpdateMany(payload) {
     const globalState = getGlobalStateCopy()
     const response = []
@@ -116,6 +125,9 @@ export function apiTicketUpdateMany(payload) {
     return finalResponse
 }
 
+/**
+ * xxx
+ */
 export function apiTicketsShowMany(payload) {
     const globalState = getGlobalState()
     const ids = payload.split(',')
@@ -136,15 +148,19 @@ export function apiTicketsShowMany(payload) {
     return {tickets: result}
 }
 
-
+/**
+ * xxx
+ */
 function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
     current = {...current}
     if (current.status == 'closed') {
         throw new Error('cannot update a closed ticket')
     }
+
     if (incomingUpdate.subject) {
         current.subject = incomingUpdate.subject
     }
+
     if (incomingUpdate.assignee_email||
         incomingUpdate.group_id||incomingUpdate.organization_id||incomingUpdate.collaborator_ids ||
         incomingUpdate.additional_collaborators||incomingUpdate.followers||incomingUpdate.priority||incomingUpdate.email_ccs) {
@@ -155,6 +171,7 @@ function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
     if (incomingUpdate.requester_id) {
         current.requester_id = normalizeId(incomingUpdate.requester_id)
     }
+
     if (incomingUpdate.assignee_id) {
         current.assignee_id = normalizeId(incomingUpdate.assignee_id)
     }
@@ -162,24 +179,29 @@ function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
     if (incomingUpdate.status) {
         current.status = incomingUpdate.status
     }
+
     if (incomingUpdate.additional_tags) { // less documented, but does work on latest api
         assert(Array.isArray(incomingUpdate.additional_tags), 'additional_tags must be an array')
         current.tags = [...incomingUpdate.additional_tags, ...current.tags]
         current.tags = lodash.uniq(current.tags)
     }
+
     if (incomingUpdate.remove_tags) { // less documented, but does work on latest api
         assert(Array.isArray(incomingUpdate.remove_tags), 'remove_tags must be an array')
         current.tags = current.tags.filter(t=>!incomingUpdate.remove_tags.includes(t))
     }
+
     if (incomingUpdate.tags) {
         current.tags = incomingUpdate.tags
         current.tags = lodash.uniq(current.tags)
     }
+
     if (incomingUpdate.external_id||incomingUpdate.problem_id||incomingUpdate.due_at||
         incomingUpdate.updated_stamp||incomingUpdate.sharing_agreement_ids||incomingUpdate.macro_ids ||
         incomingUpdate.attribute_value_ids) {
         throw new Error("cannot update this property, not yet implemented")
     }
+    
     intCustomFields(incomingUpdate.custom_fields)
     if (incomingUpdate.custom_fields) {
         // confirmed in zendesk api that this merges in, not replaces
@@ -193,7 +215,9 @@ function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
     return current
 }
 
- // Ticket.CreateModel
+/**
+ * See typescript type Ticket.CreateModel
+ */
 function transformIncomingTicketImportIntoInternal(globalState, obj) {
     assert(!obj.id, `new ticket - cannot specify id`)
     if (obj.external_id || obj.type ||  obj.priority || obj.recipient 
@@ -202,10 +226,13 @@ function transformIncomingTicketImportIntoInternal(globalState, obj) {
          obj.ticket_form_id || obj.brand_id) {
         throw new Error("cannot set this property, not yet implemented")
     }
+
     if (obj.fields) {
         throw new Error("cannot set fields, not yet implemented")
     }
+
     intCustomFields(obj.custom_fields)
+
     return {
         id: generateTicketId(globalState.persistedState),
         created_at: obj.created_at || getCurrentTimestamp(),
