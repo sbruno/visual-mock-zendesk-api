@@ -171,6 +171,7 @@ function checkIsoDateOrThrow(s) {
 
     try {
         const d = new Date(s)
+        assert(d instanceof Date && !isNaN(d), 'date could not be parsed')
     } catch(e) {
         throw new Error('failed to parse iso date ' + s + e)
     }

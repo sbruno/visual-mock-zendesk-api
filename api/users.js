@@ -56,7 +56,7 @@ export function apiUsersCreateMany(payload) {
 
 
 /**
- * /api/v2/users/search?query=email:encodeURIComponent(email)
+ * Endpoint for searching users by email
  */
 export function apiUsersSearchByEmail(email) {
     const globalState = getGlobalState()
@@ -64,7 +64,7 @@ export function apiUsersSearchByEmail(email) {
 }
 
 /**
- * xxx
+ * Internal helper for searching users by email
  */
 export function usersSearchByEmailImpl(globalState, email) {
     const allUsers = globalState.persistedState.users
@@ -81,7 +81,9 @@ export function usersSearchByEmailImpl(globalState, email) {
     }
 }
 
-
+/**
+ * Validate incoming data
+ */
 export function transformIncomingUserIntoInternal(globalState, obj) {
     assert(!obj.id, `new user - cannot specify id`)
     return {

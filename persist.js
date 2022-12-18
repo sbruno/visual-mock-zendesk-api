@@ -5,6 +5,20 @@ import { getCurrentTimestamp } from './api/helpers.js';
 
 /**
  * For simplicity, instead of a db, save state a json file to disk
+ * 
+ * Reading state:
+ * const globalState = getGlobalState()
+ * const myVal = globalState.x.y.z
+ * 
+ * Writing state:
+ * First, begin the transaction by getting a copy of state.
+ * const globalState = getGlobalStateCopy()
+ * Then, make changes,
+ * globalState.x.y.z = 'changed'
+ * Then, commit the changes both to memory and to disk,
+ * saveGlobalState(globalState)
+ * If an exception occurs, all changes were made to a copy and so they're intentionally dropped.
+ * This way we can guarentee consistency, partial changes will never be saved to disk.
  */
 let masterGlobalState = {}
 
@@ -52,26 +66,28 @@ export function resetPersistedState() {
 }
 
 /**
- * xxx
+ * Get the global state.
+ * Used for read operations.
  */
 export function getGlobalState() {
-    // We trust that callers won't make any changes.
-    // For a larger project, we'd prevent this, for example only exposing getters.
-    return masterGlobalState
+    // Prevent callers from making any changes -
+    // any changes they accidentally will be dropped and never persisted.
+    return getGlobalStateCopy()
 }
 
 /**
- * xxx
+ * This can be used to mimic transactions,
+ * Callers act on a copy, then save the copy when complete.
+ * Used for write operations.
  */
 export function getGlobalStateCopy() {
-    // This can be used to mimic transactions,
-    // Callers act on a copy, then save the copy when complete.
+    // lodash's clonedeep is another possibility.
     const clone = JSON.parse(JSON.stringify(masterGlobalState))
     return clone
 }
 
 /**
- * xxx
+ * Commit the changes to disk
  */
 export function saveGlobalState(copyGlobalState=undefined) {
     copyGlobalState = copyGlobalState || masterGlobalState

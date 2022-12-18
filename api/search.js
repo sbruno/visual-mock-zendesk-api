@@ -173,7 +173,6 @@ export function apiSearch(query, sortBy, sortOrder) {
     }
 
     let results = Object.values(globalState.persistedState.tickets)
-    results = lodash.sortBy(results, 'created_at')
     results = results.filter(t=> {
         for (let key of Object.keys(filters)) {
             let filter = filters[key]
@@ -186,8 +185,19 @@ export function apiSearch(query, sortBy, sortOrder) {
         return true
     })
 
-    // lexical sort on an iso 8601 time is good enough
-    results = lodash.sortBy(results, sortBy)
+    if (sortBy === 'created_at' || sortBy === 'updated_at') {
+        // lexical sort might have been ok, if we knew everything was exactly the same iso8601 format, but that
+        // is too much of an assumption. in the future better to store this internally as int milliseconds
+        results = lodash.sortBy(results, t=> {
+            const dtString = t[sortBy]
+            const d = new Date(dtString)
+            // get milliseconds since epoch
+            return d.valueOf()
+        })
+    } else {
+        results = lodash.sortBy(results, sortBy)
+    }
+
     if (sortOrder === 'desc') {
         results.reverse()
     }

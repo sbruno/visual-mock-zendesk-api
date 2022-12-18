@@ -19,6 +19,9 @@ Can edit test_helpers.py and flip hitEndpointEndingWithJson and replayRecordedRe
 For simplicity we have one hard-coded admin user.
 Future feature could be to read credentials in an authentication header
 
+
+When sending in requests, remember to use url encoding. For example, /api/v2/users/search?query=email:encodeURIComponent(email)
+
 Zendesk is a trademark of Zendesk, Inc.
 
 References:
