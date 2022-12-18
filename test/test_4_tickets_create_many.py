@@ -1,5 +1,5 @@
 
-from do_test_helpers import *
+from test_helpers import *
 
 def go4TicketsCreateMany():
     # author defaults

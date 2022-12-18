@@ -1,6 +1,6 @@
 import { getGlobalState, getGlobalStateCopy, onLoad, resetPersistedState, saveGlobalState } from "../persist.js"
 import { apiGetTicketComments } from "./comments.js"
-import { normalizeId } from "./helpers.js"
+import { normalizeId, errNotImplemented } from "./helpers.js"
 import { apiGetJobById } from "./jobresults.js"
 import { apiSearch } from "./search.js"
 import { apiTicketsImportCreateMany, apiTicketsShowMany, apiTicketUpdateMany } from "./tickets.js"

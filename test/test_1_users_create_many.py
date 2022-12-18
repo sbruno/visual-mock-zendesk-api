@@ -1,5 +1,5 @@
 
-from do_test_helpers import *
+from test_helpers import *
 
 def go1UsersCreateMany():
     if not getInputBool('OK to run this test, which will reset all tickets+users?'):

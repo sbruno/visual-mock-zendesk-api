@@ -4,19 +4,19 @@ import sys
 import requests
 import json
 import urllib.parse
-import do_test_recorded
+import test_recorded
 sys.path.append('bn_python_common.zip')
 sys.path.append('test/bn_python_common.zip')
 from bn_python_common import *
 
 
-configText = files.readall('configs.json')
+configText = files.readall('../configs.json')
 configs = json.loads(configText)
 assertEq('/mock.zendesk.com', configs['overrideJobStatusUrlPrefix'])
 
 # we support with+without .json suffix on all endpoints,
 # so run tests twice, once with this True, and once with it False 
-doWithJson = False
+hitEndpointEndingWithJson = False
 
 # instead of contacting mock-zendesk, contact recorded responses
 # from a real zendesk instance
@@ -68,7 +68,7 @@ def sendPost(endpoint, jsonData):
 def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
     global configs
     if not endpoint.endswith('delete_all'):
-        if not doWithJson:
+        if not hitEndpointEndingWithJson:
             if endpoint.endswith('.json'):
                 endpoint = endpoint.replace('.json', '')
         else:
@@ -103,7 +103,7 @@ def sendImpl(method, endpoint, jsonData=None, encodedQueryString=''):
         global replayRecordedResponsesCounter
         index = replayRecordedResponsesCounter
         replayRecordedResponsesCounter += 1
-        text = do_test_recorded.simulatedResponses[index]
+        text = test_recorded.simulatedResponses[index]
         code = 400 if text.strip().startswith('Error') else 200
         r = Bucket(text=text, status_code=code)
     else:

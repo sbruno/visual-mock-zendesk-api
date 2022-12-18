@@ -1,6 +1,11 @@
 
+from test_helpers import *
 
 def go7TicketsUpdateMany():
+    if replayRecordedResponses:
+        trace('skipping, not yet in replayRecordedResponses')
+        return
+        
     s = r'''{
     "tickets": [
       {

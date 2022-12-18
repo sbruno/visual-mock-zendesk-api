@@ -1,0 +1,18 @@
+{
+    "createNotSupportedMessage": "You can use curl to create a ticket.",
+    "portNumber": 8999,
+    "overrideJobStatusUrlPrefix": "/mock.zendesk.com",
+    "customFields": {
+        "fld1": "1000000001",
+        "fld2": "1000000002",
+        "fld3": "1000000003",
+        "fld4": "1000000004",
+        "fld5": "1000000005"
+    },
+    "customTriggers": [
+        {"action": "removeTagWhenPublicCommentPosted", "value":"tag-to-remove-has-processed"},
+        {"action": "openPostWhenPublicCommentContainingTextPosted", "value": "open-when-this-text"}
+    ]
+}
+
+

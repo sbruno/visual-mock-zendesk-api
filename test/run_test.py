@@ -1,5 +1,5 @@
 
-from do_test_helpers import *
+from test_helpers import *
 from test_1_users_create_many import *
 from test_2_users_search import *
 from test_3_users_show_many import *
