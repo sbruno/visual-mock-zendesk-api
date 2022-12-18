@@ -5,7 +5,16 @@ import { normalizeId } from "./helpers.js"
 import { getCustomFldVal } from "./customfields.js"
 
 /**
- * xxx
+ * Base class for search filters
+ * 
+ * The way Zendesk's search api works is this:
+ * if you specify "tags:a tags:b" this means to search for
+ * tags:a OR tags:b
+ * (tickets with a, tickets with b, and tickets with both are included)
+ * 
+ * and you can say "-tags:a" to exclude tickets with the a tag.
+ * 
+ * We don't currently support something like tags:a -tags:b
  */
 class BaseFilter {
     includeThese = []
@@ -16,7 +25,7 @@ class BaseFilter {
 }
 
 /**
- * xxx
+ * Filter by ticket status
  */
 class FilterStatus extends BaseFilter {
     getFilter() {
@@ -35,7 +44,7 @@ class FilterStatus extends BaseFilter {
 }
 
 /**
- * xxx
+ * Filter by tag
  */
 class FilterByTag extends BaseFilter {
     getFilter() {
@@ -64,13 +73,16 @@ class FilterByTag extends BaseFilter {
 }
 
 /**
- * xxx
+ * Filter by custom id.
+ * We'll have separate instances of this class for each custom id, since they are independent,
+ * e.g. if the user searches custom_field_1234:abc custom_field_5678:def they work separately
  */
 class FilterCustomField extends BaseFilter {
     constructor(id) {
         super()
         this.id = normalizeId(id)
     }
+
     getFilter() {
         if (this.includeThese.length && this.excludeThese.length) {
             throw errNotImplemented(`FilterCustomField ${this.id} cannot have both include and exclude`)
@@ -78,13 +90,13 @@ class FilterCustomField extends BaseFilter {
 
         if (this.includeThese.length) {
             return (t)=>{
-                const v = getCustomFldVal(t, this.id)
-                return this.includeThese.includes(v)
+                const vOrUndefined = getCustomFldVal(t, this.id)
+                return this.includeThese.includes(vOrUndefined)
             }
         } else if (this.excludeThese.length) {
             return (t)=>{
-                const v = getCustomFldVal(t, this.id)
-                return !this.excludeThese.includes(v)
+                const vOrUndefined = getCustomFldVal(t, this.id)
+                return !this.excludeThese.includes(vOrUndefined)
             }
         } else {
             return (t)=>true
@@ -93,7 +105,7 @@ class FilterCustomField extends BaseFilter {
 }
 
 /**
- * xxx
+ * Endpoint for searching
  */
 export function apiSearch(query, sortBy, sortOrder) {
     const globalState = getGlobalState()
@@ -102,13 +114,15 @@ export function apiSearch(query, sortBy, sortOrder) {
     if (query.includes('%20')) {
         throw new Error('still escaped?', query)
     }
-    const queryParts = query.split(' ')
+
+    // filters will have keys like 'filterStatus' and '123' where 123 is a customfld id
     const filters = {}
     filters.filterStatus = new FilterStatus()
     filters.filterTag = new FilterByTag()
     const addCustomFieldFilter = (s, isExclude) => {
+        // we've already stripped 'custom_field_' prefix, so s looks like '12345:abc
         if (!s.includes(':')) {
-            throw new Error('Expected custom_id_12345:abc, got ' + s)
+            throw new Error('Expected custom_field_12345:abc, got ' + s)
         }
 
         const id = s.split(':')[0]
@@ -116,6 +130,7 @@ export function apiSearch(query, sortBy, sortOrder) {
         if (!filters[id]) {
             filters[id] = new FilterCustomField(id)
         }
+
         if (isExclude) {
             filters[id].excludeThese.push(val)
         } else {
@@ -123,12 +138,19 @@ export function apiSearch(query, sortBy, sortOrder) {
         }
     }
     
+    const queryParts = query.split(' ')
     for (let part of queryParts) {
         part = part.trim()
         if (!part) {
             continue
         } else if (part.startsWith('updated')) {
             console.log('updated clause is currently ignored.')
+        } else if (part.startsWith('type')) {
+            console.log('type clause is currently ignored (assumed to be ticket).')
+        }else if (part.startsWith('sort')) {
+            console.log('sort clause is currently ignored (use sort_by query param).')
+        }else if (part.startsWith('order_by')) {
+            console.log('order_by clause is currently ignored (use sort_order query param).')
         } else if (part.startsWith('status:')) {
             const s = part.slice('status:'.length)
             filters.filterStatus.includeThese.push(s)
@@ -164,6 +186,7 @@ export function apiSearch(query, sortBy, sortOrder) {
         return true
     })
 
+    // lexical sort on an iso 8601 time is good enough
     results = lodash.sortBy(results, sortBy)
     if (sortOrder === 'desc') {
         results.reverse()

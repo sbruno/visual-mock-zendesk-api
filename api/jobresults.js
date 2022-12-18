@@ -5,7 +5,7 @@ import { getGlobalState } from "../persist.js";
 import { getCurrentTimestamp, getPortNumber } from "./helpers.js";
 
 /**
- * xxx
+ * Endpoint to show job status
  */
 export function apiGetJobById(jobId) {
     const globalState = getGlobalState()
@@ -13,11 +13,12 @@ export function apiGetJobById(jobId) {
     if (!result) {
         throw new Error(`job not found ${jobId}`)
     }
+
     return renderCompletedJob(jobId, result)
 }
 
 /**
- * xxx
+ * Return this json to the user for a job still in progress
  */
 export function renderPendingJob(jobId) {
     const globalState = getGlobalState()
@@ -35,7 +36,7 @@ export function renderPendingJob(jobId) {
 }
 
 /**
- * xxx
+ * Return this json to the user for a completed job
  */
 export function renderCompletedJob(jobId, payload) {
     const globalState = getGlobalState()

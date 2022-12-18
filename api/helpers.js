@@ -87,6 +87,15 @@ export function normalizeId(id) {
 }
 
 /**
+ * Call normalizeId if present
+ */
+export function normalizeIdIfPresent(obj, keyId) {
+    if (obj[keyId]) {
+        obj[keyId] = normalizeId(obj[keyId])
+    }
+}
+
+/**
  * Store a job in memory. Ephemeral, will be lost on app restart/app exit.
  */
 export function addJobResultToMemory(globalState, payload) {

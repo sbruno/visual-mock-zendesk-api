@@ -1,7 +1,9 @@
-import { addJobResultToMemory, generateTicketId, getCurrentTimestamp, normalizeId } from "./helpers.js"
-import { insertPersistedComment, insertPersistedTicket, insertPersistedUser, updatePersistedTicket, validateInternalTicket } from "./schema.js"
+
 import assert from "assert";
 import lodash from 'lodash'
+
+import { addJobResultToMemory, generateTicketId, getCurrentTimestamp, normalizeId, normalizeIdIfPresent } from "./helpers.js"
+import { insertPersistedComment, insertPersistedTicket, insertPersistedUser, updatePersistedTicket, validateInternalTicket } from "./schema.js"
 import { getDefaultAdminId, getGlobalState, getGlobalStateCopy, saveGlobalState } from "../persist.js"
 import { renderPendingJob } from "./jobresults.js"
 import {  transformIncomingUserIntoInternal, usersSearchByEmailImpl } from "./users.js"
@@ -9,13 +11,36 @@ import { allowShortcutStringComment, transformIncomingCommentIntoInternal } from
 import { runTriggersOnNewCommentPosted } from "./triggers.js"
 import { intCustomFields } from "./customfields.js";
 
-
-// It's semi un-documented, but some ticket apis, especially the batch ones,
-// let you create a new user inline, for example instead of providing
-// requester_id: 234, providing requester: { name: 'name', email: 'example@example.com'}
-// this function implements this feature.
 /**
- * xxx
+ * Endpoint for retrieving tickets
+ */
+export function apiTicketsShowMany(payload) {
+    const globalState = getGlobalState()
+    const ids = payload.split(',')
+    const result = []
+    for (let id of ids) {
+        id = normalizeId(id)
+        if (!globalState.persistedState.tickets[id]) {
+            console.log(`ticket not found ${id}, skipping`)
+            continue
+        }
+
+        const existing = lodash.cloneDeep(globalState.persistedState.tickets[id])
+
+        // in general we return the raw object, but to match actual-zendesk set fields like this.
+        existing.fields = [...existing.fields, ...existing.custom_fields]
+        result.push(existing)
+    }
+
+    result.reverse() // to indicate that there is no guarenteed ordering
+    return {tickets: result}
+}
+
+/**
+ * Some ticket apis, especially the batch ones,
+ * let you create a new user inline, for example instead of providing
+ * requester_id: 234, providing requester: { name: 'name', email: 'example@example.com'}
+ * this function implements this feature. Not really documented.
  */
 function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
     if (obj[keyToUse]) {
@@ -40,44 +65,47 @@ function allowInlineNewUser(globalState, obj, keyToUse, keyId) {
             obj[keyId] = resultUser.id
         }
     }
-
-    if (obj[keyId]) {
-        obj[keyId] = normalizeId(obj[keyId])
-    }
 }
 
+
 /**
- * xxx
+ * Endpoint for creating tickets
  */
 export function apiTicketsImportCreateMany(payload) {
-    // because this is an 'import' api, we allow setting createdat
+    // Because this is an 'import' api, we allow setting createdat
     const globalState = getGlobalStateCopy()
     const response = []
+    assert(payload.tickets && Array.isArray(payload.tickets), 'not an array')
     for (let [index, ticket] of payload.tickets.entries()) {
         allowInlineNewUser(globalState, ticket, 'requester', 'requester_id')
         allowInlineNewUser(globalState, ticket, 'submitter', 'submitter_id')
+        normalizeIdIfPresent(ticket, 'requester_id')
+        normalizeIdIfPresent(ticket, 'submitter_id')
         const resultTicket = transformIncomingTicketImportIntoInternal(globalState, ticket)
         resultTicket.comment_ids = []
         if (ticket.comment) {
-            // Zendesk allows this shorthand
+            // Allow shorter syntax
             ticket.comments = [ticket.comment]
         }
 
         for (let [j, comment] of (ticket.comments||[]).entries()) {
             comment = allowShortcutStringComment(comment)
             allowInlineNewUser(globalState, comment, 'author', 'author_id')
-            const fallbackAuthorId = j === 0 ? normalizeId(resultTicket.requester_id) : getDefaultAdminId() // Tricky zendesk logic... this seems to match what happens
+            normalizeIdIfPresent(comment, 'author_id')
+
+            // Tricky zendesk logic... this seems to match what happens when author_id is missing
+            const fallbackAuthorId = j === 0 ? normalizeId(resultTicket.requester_id) : getDefaultAdminId() 
             const c = transformIncomingCommentIntoInternal(globalState, comment, fallbackAuthorId)
             insertPersistedComment(globalState, c)
             resultTicket.comment_ids.push(c.id)
-            // Because this is 'import create many', not 'standard create many', skip triggers
+            // Because this is a 'import create many', not 'standard create many', skip triggers
         }
 
         insertPersistedTicket(globalState, resultTicket)
         response.push({index: index, id: resultTicket.id, account_id: "not yet implemented", "success": true /* extra */})
     }
 
-    // Because this is 'import create many', not 'standard create many', skip triggers
+    // Because this is 'import create many', not 'standard create many', don't run any triggers
     const newJobId = addJobResultToMemory(globalState, response)
     const finalResponse = renderPendingJob(newJobId)
     saveGlobalState(globalState)
@@ -85,12 +113,13 @@ export function apiTicketsImportCreateMany(payload) {
 }
 
 /**
- * xxx
+ * Endpoint for updating tickets
  */
 export function apiTicketUpdateMany(payload) {
     const globalState = getGlobalStateCopy()
     const response = []
 
+    assert(payload.tickets && Array.isArray(payload.tickets), 'not an array')
     for (let [index, ticket] of payload.tickets.entries()) {
         ticket.id = normalizeId(ticket.id)
         const existing = globalState.persistedState.tickets[ticket.id]
@@ -102,6 +131,7 @@ export function apiTicketUpdateMany(payload) {
         if (ticket.comments) {
             throw new Error(`you can only set comments when importing`)
         }
+
         if (ticket.comment) {
             ticket.comment = allowShortcutStringComment(ticket.comment)
             if (ticket.comment.created_at) {
@@ -109,6 +139,7 @@ export function apiTicketUpdateMany(payload) {
             }
 
             allowInlineNewUser(globalState, ticket.comment, 'author', 'author_id')
+            normalizeIdIfPresent(ticket.comment, 'author_id')
             const c = transformIncomingCommentIntoInternal(globalState, ticket.comment, normalizeId(resultTicket.requester_id))
             insertPersistedComment(globalState, c)
             resultTicket.comment_ids.push(c.id)
@@ -125,31 +156,10 @@ export function apiTicketUpdateMany(payload) {
     return finalResponse
 }
 
-/**
- * xxx
- */
-export function apiTicketsShowMany(payload) {
-    const globalState = getGlobalState()
-    const ids = payload.split(',')
-    const result = []
-    for (let id of ids) {
-        id = normalizeId(id)
-        if (!globalState.persistedState.tickets[id]) {
-            console.log(`ticket not found ${id}`)
-            continue
-        }
 
-        const existing = lodash.cloneDeep(globalState.persistedState.tickets[id])
-        existing.fields = [...existing.fields, ...existing.custom_fields]
-        result.push(existing)
-    }
-
-    result.reverse() // there is no guarenteed ordering
-    return {tickets: result}
-}
 
 /**
- * xxx
+ * Ensures only valid data is being sent in.
  */
 function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
     current = {...current}
@@ -167,7 +177,7 @@ function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
         throw new Error("cannot update this property, not yet implemented")
     }
 
-    /* interestingly we can update these */
+    /* interestingly we can update this */
     if (incomingUpdate.requester_id) {
         current.requester_id = normalizeId(incomingUpdate.requester_id)
     }
@@ -216,6 +226,7 @@ function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
 }
 
 /**
+ * Ensures only valid data is being sent in.
  * See typescript type Ticket.CreateModel
  */
 function transformIncomingTicketImportIntoInternal(globalState, obj) {
@@ -231,6 +242,8 @@ function transformIncomingTicketImportIntoInternal(globalState, obj) {
         throw new Error("cannot set fields, not yet implemented")
     }
 
+    // TODO: take the incoming date for created_at and parse+normalise it to iso8601 format.
+    // Then schema's checkIsoDateOrThrow can be stricter because it is post-normalization
     intCustomFields(obj.custom_fields)
 
     return {
@@ -250,3 +263,4 @@ function transformIncomingTicketImportIntoInternal(globalState, obj) {
         is_public: (obj.is_public === undefined) ? true : obj.is_public
     }
 }
+

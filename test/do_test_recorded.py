@@ -549,7 +549,7 @@ simulatedResponses = [
       "subject": null,
       "submitter_id": 10981611611675,
       "tags": [
-        "tag-to-replace-has-processed",
+        "tag-to-remove-has-processed",
         "tag1",
         "tag2"
       ],
@@ -785,7 +785,7 @@ simulatedResponses = [
       "subject": null,
       "submitter_id": 11007294636571,
       "tags": [
-        "tag-to-replace-has-processed"
+        "tag-to-remove-has-processed"
       ],
       "ticket_form_id": 10981566968091,
       "type": null,
@@ -931,7 +931,7 @@ simulatedResponses = [
       "subject": null,
       "submitter_id": 10981611611675,
       "tags": [
-        "tag-to-replace-has-processed",
+        "tag-to-remove-has-processed",
         "tag1",
         "tag2"
       ],
@@ -1598,7 +1598,7 @@ Error: {
       "subject": null,
       "submitter_id": 10981611611675,
       "tags": [
-        "tag-to-replace-has-processed",
+        "tag-to-remove-has-processed",
         "tag1",
         "tag2"
       ],

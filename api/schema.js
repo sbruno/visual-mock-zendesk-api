@@ -6,14 +6,17 @@ import lodash from 'lodash'
 import { getCurrentTimestamp } from "./helpers.js";
 import { getDefaultAdminId } from "../persist.js";
 
-export const Statuses = ["new" , "open" , "pending" , "hold" , "solved" , "closed"]
 
-
-// These functions ensure that the data we persist to storage has exactly the correct shape.
-// We can also rely on them to cause a thrown error if there's missing/malformed user input.
-
-// 
 /**
+ * These functions ensure that the data we persist to storage has exactly the correct shape.
+ * yup usually permits extra properties but we put things in strict mode here.
+ * 
+ * The transform* functions generally clean up bad user input, but there are a few cases
+ * these functions also currently catch bad input, like malformed dates.
+ */
+
+/**
+ * Validate a user object
  * (See TypeScript's User.ResponseModel)
  */
 export function validateInternalUser(obj) {
@@ -23,14 +26,15 @@ export function validateInternalUser(obj) {
         email: yup.string().required(),
         created_at: yup.string().required(),
       }).noUnknown(true).required();
+
       doValidateForInternal(schema, obj) 
       checkIsoDateOrThrow(obj.created_at)
       return obj
 }
 
-// Ticket.ResponseModel
 /**
- * xxx
+ * Validate a ticket object
+ * (See TypeScript's Ticket.ResponseModel)
  */
 export function validateInternalTicket(obj) {
     // if you pass a number it will be cast to a string unless you mark the field as strict()
@@ -89,9 +93,9 @@ export function validateInternalTicket(obj) {
     return obj
 }
 
-// Comment.ResponseModel
 /**
- * xxx
+ * Validate a comment object
+ * (See TypeScript's Comment.ResponseModel)
  */
 export function validateInternalComment(obj) {
     let schema = yup.object({
@@ -99,7 +103,7 @@ export function validateInternalComment(obj) {
         created_at: yup.string().required(),
         updated_at: yup.string().required(),
         // url: not yet implemented
-        type: yup.string().required(), // "Comment" | "VoiceComment"
+        type: yup.string().required(), // values are "Comment" | "VoiceComment"
         // request_id: not yet implemented
         body: yup.string().required(),
         html_body: yup.string().required(),
@@ -118,7 +122,7 @@ export function validateInternalComment(obj) {
 }
 
 /**
- * xxx
+ * Save a user to the database
  */
 export function insertPersistedUser(globalState, obj) {
     validateInternalUser(obj)
@@ -128,7 +132,7 @@ export function insertPersistedUser(globalState, obj) {
 }
 
 /**
- * xxx
+ * Save a comment to the database
  */
 export function insertPersistedComment(globalState, obj) {
     validateInternalComment(obj)
@@ -137,7 +141,7 @@ export function insertPersistedComment(globalState, obj) {
 }
 
 /**
- * xxx
+ * Save a ticket to the database
  */
 export function insertPersistedTicket(globalState, obj) {
     validateInternalTicket(obj)
@@ -146,7 +150,7 @@ export function insertPersistedTicket(globalState, obj) {
 }
 
 /**
- * xxx
+ * Update a ticket to the database
  */
 export function updatePersistedTicket(globalState, obj) {
     validateInternalTicket(obj)
@@ -155,13 +159,14 @@ export function updatePersistedTicket(globalState, obj) {
 }
 
 /**
- * xxx
+ * Dates in the db should be strings in ISO-8601 format, see getCurrentTimestamp()
  */
 function checkIsoDateOrThrow(s) {
     if (!s) {
         throw new Error('not an iso date ' + s)
     } else if (!s.includes('T')) {
-        throw new Error('does not contain a T, might not be an iso date' + s)
+        // Do not throw, accept this as long as the parse below succeeds
+        console.log('does not contain a T, might not be an iso date' + s)
     }
 
     try {
@@ -172,7 +177,7 @@ function checkIsoDateOrThrow(s) {
 }
 
 /**
- * xxx
+ * Throw if attempt to add same email twice
  */
 function emailCannotExistTwice(globalState, email) {
     const allUsers = globalState.persistedState.users
@@ -185,7 +190,7 @@ function emailCannotExistTwice(globalState, email) {
 }
 
 /**
- * xxx
+ * Set yup parameters to make it a stricter comparison
  */
 function doValidateForInternal(schema, obj) {
     // stripUnknown: throws if any required are not there
@@ -195,3 +200,7 @@ function doValidateForInternal(schema, obj) {
     schema.validateSync(obj, {stripUnknown: false, strict:true}) 
 }
 
+/**
+ * Values for status. hold isn't enabled by default iirc.
+ */
+export const Statuses = ["new" , "open" , "pending" , "hold" , "solved" , "closed"]

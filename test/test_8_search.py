@@ -154,6 +154,11 @@ def go8Search():
         '-custom_field_%FLDID2%:skipTicketsWhereFld2SaysThis', 
         'custom_field_%FLDID3%:includeTicketsWhereFld3SaysThis', 
         ]
+    q = f'query=' + quote(subInTemplates(" ".join(clauses))) + '&sort_by=created_at&sort_order=asc'
+    result = sendGet('/api/v2/search', q)
+    assertEq(2, result['count'])
+    assertEq(stateIds['ticketTestSearch1'], result['results'][0]['id'])
+    assertEq(stateIds['ticketTestSearch8'], result['results'][1]['id'])
     q = f'query=' + quote(subInTemplates(" ".join(clauses))) + '&sort_by=created_at&sort_order=desc'
     result = sendGet('/api/v2/search', q)
     assertEq(2, result['count'])
