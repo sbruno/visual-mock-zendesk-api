@@ -63,3 +63,6 @@ server.listen(getPortNumber().toString(), () => {
   console.log(`Listening on port ${getPortNumber()}...`)
 })
 
+// References:
+// https://regbrain.com/article/bootstrap-express
+// https://www.edureka.co/blog/rest-api-with-node-js

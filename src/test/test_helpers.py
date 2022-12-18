@@ -20,7 +20,7 @@ hitEndpointEndingWithJson = False
 
 # instead of contacting mock-zendesk, contact recorded responses
 # from a real zendesk instance
-replayRecordedResponses = True
+replayRecordedResponses = False
 replayRecordedResponsesCounter = 0
 
 host = f'http://localhost:{configs["portNumber"]}'

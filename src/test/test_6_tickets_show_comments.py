@@ -58,3 +58,4 @@ def go6TicketsShowComments():
     assertEq(stateIds['user3'], result['tickets'][1]['submitter_id'])
     assertEq(stateIds['admin'], result['tickets'][2]['requester_id'])
     assertEq(stateIds['admin'], result['tickets'][2]['submitter_id'])
+

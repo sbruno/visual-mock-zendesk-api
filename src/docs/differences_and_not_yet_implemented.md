@@ -10,9 +10,8 @@ I've written some known minor behavior differences. Someday maybe these can all 
     * several properties are not implemented. see schema.js
     * in general, if extra properties or unsupported properties are included on a ticket or comment, they are silently ignored (in actual-zendesk a warning header is sent back)
     * in both visual-mock-zendesk and actual-zendesk string ids are supported, sending in `id: "123"` will work, although it is technically more correct to use integer ids.
-    * in visual-mock-zendesk, dates must be specified in ISO 8601 format
-    * in visual-mock-zendesk, we are sometimes loose around creating a user again. if you ask visual-mock-zendesk to create a user that already exists we might silently return the existing user, actual-zendesk might error.
-    * in visual-mock-zendesk, we don't look at any headers for any credentials or to know who the current admin is. there is one hard-coded admin user who is always assumed to be the current admin. 
+    * in visual-mock-zendesk, we let you create the same user again. if you ask visual-mock-zendesk to create a user that already exists we might silently return the existing user, even if actual-zendesk might error.
+    * in visual-mock-zendesk, we don't look at any headers for any credentials or to know who the current admin is. there is one hard-coded admin user who is always assumed to be the current admin. Future feature could be to read credentials in an authentication header and use the email provided there as the admin.
 * Ticket show
     * In both visual-mock-zendesk and actual-zendesk, `show?ids=1,2,3` might return results in a different order than the order you had in your query, like 3,2,1. 
     * in visual-mock-zendesk retrieving a ticket, the ticket has a comment_ids property, this doesn't exist in actual-zendesk.
@@ -21,7 +20,7 @@ I've written some known minor behavior differences. Someday maybe these can all 
     * we don't support the `update_many.json?id=1` syntax.
     * In visual-mock-zendesk, if posting a new comment and the author_id is missing, we fall back to the requester, which is likely the behavior of actual-zendesk. Unclear what happens if the requester_id is being updated at the same time. I encourage you to simply send `author_id` for each comment which works in all cases.
 * Ticket import
-    * In both visual-mock-zendesk and actual-zendesk, there is slight distinction between tickets/imports/create_many and tickets/create_many,
+    * In both visual-mock-zendesk and actual-zendesk, there is slight distinction between imports/tickets/create_many and tickets/create_many,
         * imports can set a created_at on the comments
         * triggers are not run during imports
     * in visual-mock-zendesk ticket ids are randomly chosen, in actual-zendesk, they are always increasing.

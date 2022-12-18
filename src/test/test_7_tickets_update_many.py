@@ -92,7 +92,7 @@ def go7TicketsUpdateMany():
     comments1 = sendGet(f'/api/v2/tickets/{t1["id"]}/comments')['comments']
     assertEq(3, len(comments1))
     testComment(comments1[0], authorId=stateIds['user2'], text='comment1', public=False)
-    testComment(comments1[1], authorId=stateIds['user1'], text='comment2')
+    testComment(comments1[1], authorId=stateIds['admin'], text='comment2')
     testComment(comments1[2], authorId=stateIds['user2'], text=subInTemplates('a %TEXT_NOTICED_BY_TRIGGER% b'))
 
     ### test ticket 2
