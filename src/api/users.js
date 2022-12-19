@@ -1,7 +1,7 @@
 
 import assert from "assert";
 import { saveGlobalState, getGlobalStateCopy, getGlobalState } from "../persist.js";
-import { addJobResultToMemory, getCurrentTimestamp,  generateUserId, normalizeId } from "./helpers.js";
+import { addJobResultToMemory, getCurrentTimestamp, generateUserId, normalizeId } from "./helpers.js";
 import { renderPendingJob } from "./jobresults.js";
 import { insertPersistedUser, validateInternalUser } from "./schema.js";
 
@@ -22,10 +22,10 @@ export function apiUsersShowMany(payload) {
 
         result.push(globalState.persistedState.users[id])
     }
-    
+
     // Reverse the array, to simulate that there is no guarenteed ordering
     result.reverse()
-    return {users: result}
+    return { users: result }
 }
 
 /**
@@ -40,11 +40,11 @@ export function apiUsersCreateMany(payload) {
         const resultUser = transformIncomingUserIntoInternal(globalState, userInfo)
         const alreadyFound = usersSearchByEmailImpl(globalState, resultUser.email)
         if (alreadyFound?.users?.length) {
-            response.push({"success": true, index: index, id: alreadyFound.users[0].id, "action": "update", "status": "Updated"})
+            response.push({ "success": true, index: index, id: alreadyFound.users[0].id, "action": "update", "status": "Updated" })
         } else {
             // Need to study actual-zendesk to see if this is correct
             insertPersistedUser(globalState, resultUser)
-            response.push({"success": true, index: index, id: resultUser.id, "action": "create", "status": "Created"})
+            response.push({ "success": true, index: index, id: resultUser.id, "action": "create", "status": "Created" })
         }
     }
 

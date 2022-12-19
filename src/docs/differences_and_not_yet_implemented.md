@@ -1,5 +1,5 @@
 
-I've written some known minor behavior differences. Someday maybe these can all be fixed such that visual-mock-zendesk-api acts the same as actual-zendesk. I've also included complexities in the api.
+There are some known minor behavior differences. Someday maybe these can all be fixed such that visual-mock-zendesk-api acts the same as actual-zendesk. In this document I also discuss complexities in the api.
 
 
 * General
@@ -94,5 +94,6 @@ I've written some known minor behavior differences. Someday maybe these can all 
 
 
 
+It's easy to modify tickets and comments manually. Stop the app, edit `persistedGlobalState.json`, and start the app again.
 
 

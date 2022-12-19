@@ -53,7 +53,7 @@ curl -d '{"tickets":[{"subject": "subject one", "comments":[{"body": "test one"}
 
 ## More information
 
-[Curl Examples](src/docs/curl_examples.md)
+[Curl examples](src/docs/curl_examples.md)
 
 [Differences, not yet implemented](src/docs/differences_and_not_yet_implemented.md)
 

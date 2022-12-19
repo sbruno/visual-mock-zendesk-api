@@ -1,5 +1,5 @@
 {
-    "createNotSupportedMessage": "You can use curl to create a ticket.",
+    "createNotSupportedMessage": "You can use curl to create a ticket. For example, run this, curl -d '{\"tickets\":[{\"subject\": \"subject one\", \"comments\":[{\"body\": \"test one\"}]}]}' -H \"Content-Type: application/json\" -X POST http://localhost:8999/api/v2/imports/tickets/create_many",
     "portNumber": 8999,
     "overrideJobStatusUrlPrefix": "/mock.zendesk.com",
     "customFields": {
