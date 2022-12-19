@@ -22,6 +22,22 @@ class BaseFilter {
     getFilter() {
         throw new Error('implement in child class')
     }
+
+    addInclude(s) {
+        this.includeThese.push(this.normalize(s))
+    }
+
+    addExclude(s) {
+        this.excludeThese.push(this.normalize(s))
+    }
+
+    normalize(s) {
+        if (s.startsWith('"') && s.endsWith('"')) {
+            return s.slice(1, -1)
+        } else {
+            return s
+        }
+    }
 }
 
 /**
@@ -132,9 +148,9 @@ export function apiSearch(query, sortBy, sortOrder) {
         }
 
         if (isExclude) {
-            filters[id].excludeThese.push(val)
+            filters[id].addExclude(val)
         } else {
-            filters[id].includeThese.push(val)
+            filters[id].addInclude(val)
         }
     }
     
@@ -147,22 +163,22 @@ export function apiSearch(query, sortBy, sortOrder) {
             console.log('updated clause is currently ignored.')
         } else if (part.startsWith('type')) {
             console.log('type clause is currently ignored (assumed to be ticket).')
-        }else if (part.startsWith('sort')) {
+        } else if (part.startsWith('sort')) {
             console.log('sort clause is currently ignored (use sort_by query param).')
-        }else if (part.startsWith('order_by')) {
+        } else if (part.startsWith('order_by')) {
             console.log('order_by clause is currently ignored (use sort_order query param).')
         } else if (part.startsWith('status:')) {
             const s = part.slice('status:'.length)
-            filters.filterStatus.includeThese.push(s)
+            filters.filterStatus.addInclude(s)
         } else if (part.startsWith('-status:')) {
             const s = part.slice('-status:'.length)
-            filters.filterStatus.excludeThese.push(s)
+            filters.filterStatus.addExclude(s)
         } else if (part.startsWith('tags:')) {
             const s = part.slice('tags:'.length)
-            filters.filterTag.includeThese.push(s)
+            filters.filterTag.addInclude(s)
         } else if (part.startsWith('-tags:')) {
             const s = part.slice('-tags:'.length)
-            filters.filterTag.excludeThese.push(s)
+            filters.filterTag.addExclude(s)
         } else if (part.startsWith('custom_field_')) {
             const s = part.slice('custom_field_'.length)
             addCustomFieldFilter(s, false)

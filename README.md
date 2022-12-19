@@ -4,13 +4,13 @@
 
 Do you have an application that interacts with the Zendesk Tickets API? This is a mock implementation of some common API calls that can be used for your nonprod testing. Point your application at this mock instead, especially for local development (even if you have a real nonprod Zendesk instance, it's a central instance that will get cluttered, and will run into rate-limits).
 
-There's a visual UI!
+There's a visual UI,
 
-<img src='src/docs/shot2c.png'/>
+<picture><img src='src/docs/shot2c.png' width="50%" height="50%"/></picture>
 
-<img src='src/docs/shot1c.png'/>
+<picture><img src='src/docs/shot1c.png' width="50%" height="50%"/></picture>
 
-<img src='src/docs/shot3c.png'/>
+<picture><img src='src/docs/shot3c.png' width="50%" height="50%"/></picture>
 
 ## Setup
 
@@ -54,7 +54,9 @@ curl -d '{"tickets":[{"subject": "subject one", "comments":[{"body": "test one"}
 ## More information
 
 [Curl Examples](src/docs/curl_examples.md)
+
 [Differences, not yet implemented](src/docs/differences_and_not_yet_implemented.md)
+
 [Running visual-mock-zendesk-api's internal tests](src/docs/running_tests.md)
 
 Zendesk is a trademark of Zendesk, Inc.

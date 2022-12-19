@@ -159,14 +159,34 @@ def go8Search():
         '-custom_field_%FLDID2%:skipTicketsWhereFld2SaysThis', 
         'custom_field_%FLDID3%:includeTicketsWhereFld3SaysThis', 
         ]
+
+    # sort asc
     q = f'query=' + quote(subInTemplates(" ".join(clauses))) + '&sort_by=created_at&sort_order=asc'
     result = sendGet('/api/v2/search', q)
     assertEq(2, result['count'])
     assertEq(stateIds['ticketTestSearch1'], result['results'][0]['id'])
     assertEq(stateIds['ticketTestSearch8'], result['results'][1]['id'])
+    
+    # sort desc
     q = f'query=' + quote(subInTemplates(" ".join(clauses))) + '&sort_by=created_at&sort_order=desc'
     result = sendGet('/api/v2/search', q)
     assertEq(2, result['count'])
     assertEq(stateIds['ticketTestSearch8'], result['results'][0]['id'])
     assertEq(stateIds['ticketTestSearch1'], result['results'][1]['id'])
+
+    # handle extra spaces
+    q = f'query=' + quote(subInTemplates("  ".join(clauses))) + '&sort_by=created_at&sort_order=asc'
+    result = sendGet('/api/v2/search', q)
+    assertEq(2, result['count'])
+    assertEq(stateIds['ticketTestSearch1'], result['results'][0]['id'])
+    assertEq(stateIds['ticketTestSearch8'], result['results'][1]['id'])
+
+    # handle quotes
+    clauses[0] = '-status:"closed"'
+    clauses[2] = '-custom_field_%FLDID1%:"skipTicketsWhereFld1SaysThis"'
+    q = f'query=' + quote(subInTemplates(" ".join(clauses))) + '&sort_by=created_at&sort_order=asc'
+    result = sendGet('/api/v2/search', q)
+    assertEq(2, result['count'])
+    assertEq(stateIds['ticketTestSearch1'], result['results'][0]['id'])
+    assertEq(stateIds['ticketTestSearch8'], result['results'][1]['id'])
 
