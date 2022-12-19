@@ -122,6 +122,8 @@ export function apiRoutes(app) {
                 throw errNotImplemented('no jobid given')
             }
 
+            // we use overrideJobStatusUrlPrefix (mock.zendesk.com), as a workaround
+            // just in case clients expect to see the string 'zendesk.com' in the url.
             const jobid = normalizeId(req.params.id.replace('.json', ''))
             const result = apiGetJobById(jobid)
             res.send(result)

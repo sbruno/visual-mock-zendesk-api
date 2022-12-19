@@ -26,6 +26,7 @@ curl -d '{"tickets":[{"subject": "subject one", "comments":[{"body": "test one"}
 
 (you can now refresh http://localhost:8999/ and see the new ticket,)
 (click the blue link to edit the ticket and add a reply)
+(works on mac and windows)
 
 ```
 

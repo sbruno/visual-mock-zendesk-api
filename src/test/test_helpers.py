@@ -6,17 +6,16 @@ import json
 import urllib.parse
 import test_recorded
 sys.path.append('bn_python_common.zip')
-sys.path.append('test/bn_python_common.zip')
 from bn_python_common import *
 
 
-configText = files.readall('../configs.json')
+configText = files.readall('../configs.json', encoding='utf-8')
 configs = json.loads(configText)
 assertEq('/mock.zendesk.com', configs['overrideJobStatusUrlPrefix'])
 
 # we support with+without .json suffix on all endpoints,
 # so run tests twice, once with this True, and once with it False 
-hitEndpointEndingWithJson = False
+hitEndpointEndingWithJson = True
 
 # instead of contacting mock-zendesk, contact recorded responses
 # from a real zendesk instance
@@ -139,7 +138,7 @@ def checkJobStatusOk(response, expectedStatus):
     theId = response['job_status']['id']
     if not replayRecordedResponses:
         assertTrue(configs['overrideJobStatusUrlPrefix'] in response['job_status']['url'])
-    assertTrue(response['job_status']['url'].endswith(f'/api/v2/job_statuses/{theId}.json'), '-=-======================='+response['job_status']['url']+'=========='+f'/api/v2/job_statuses/{theId}.json')
+    assertTrue(response['job_status']['url'].endswith(f'/api/v2/job_statuses/{theId}.json'))
     
     if expectedStatus == 'completed':
         assertTrue(int(response['job_status']['total']) > 0)

@@ -1,21 +1,14 @@
 
 '''
-in reality imports/tickets doesn't accept comment:"abc"
-x-zendesk-api-warn = {:allowed_parameters=>{:controller=>"tickets", :action=>"create_many", :unpermitted_keys=>[], :invalid_values=>["tickets.2.comment"]}}
-x-zendesk-api-warn = {:allowed_parameters=>{:controller=>"tickets", :action=>"create_many", :unpermitted_keys=>[], :invalid_values=>["tickets.1.comment", "tickets.2.comment"]}}
+
+These are recorded responses from the actual api.
 
 How to set this up
 1) run tests and log each send() call, logging endpoint and body and saving to a text file
 2) in that text file, replace the generated ids with real ids.
 # use the calls to users/show_many to see what the test user ids are, then search/replace with real ids
 # use the calls to tickets/create_many to see what the test custom flds are, then search/replace with real custom flds
-# admin = 10981611611675,
-# user1 = 11007294636571,
-# user2 = 11007299217179,
-# user3 = 11007314541595,
-# fld1=10993199398427,
-# fld2=10993238892315,
-# fld3=11130845293467,
+
 
 '''
 
@@ -1687,6 +1680,6 @@ Error: {
     }
   ]
 }
-    ''',
+    '''
     
 ]

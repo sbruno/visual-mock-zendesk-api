@@ -38,7 +38,7 @@ Curl examples:
 
     curl -d '{"tickets":[{"id": 123, "comment":[{"body": "add one"}]}]}' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/tickets/update_many.json'
     
-    curl -d '{"tickets":[{"id": 123, "tags":["a"], "custom_fields":[{id:123456, value:"val"}] }' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/tickets/update_many.json'
+    curl -d '{"tickets":[{"id": 123, "tags":["a"], "custom_fields":[{"id":123456, "value":"val"}] }]}' -H "Content-Type: application/json" -X POST 'localhost:8999/api/v2/tickets/update_many.json'
 
 8 `/api/v2/search`
     simple,

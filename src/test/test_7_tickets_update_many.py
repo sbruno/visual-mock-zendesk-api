@@ -5,7 +5,9 @@ def go7TicketsUpdateMany():
     if replayRecordedResponses:
         trace('skipping, not yet in replayRecordedResponses')
         return
-        
+    
+    import time
+    time.sleep(1) # so that last_updated shows up
     s = r'''{
     "tickets": [
       {

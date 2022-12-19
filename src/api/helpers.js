@@ -108,11 +108,13 @@ export function addJobResultToMemory(globalState, payload) {
  * Gets the current time in iso format
  */
 export function getCurrentTimestamp() {
-    // Like this, 2020-04-09T20:37:31.451Z
+    // Like this, 2020-04-09T20:37:31Z
     const dt = new Date()
-    return dt.toISOString()
+    let result = dt.toISOString()
+    // Remove the milliseconds
+    result = result.replace(/\.\d+/, '')
+    return result
 }
-
 
 /**
  * Helper to indicate what isn't yet impemented

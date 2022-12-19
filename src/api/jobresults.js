@@ -24,7 +24,7 @@ export function renderPendingJob(jobId) {
     const globalState = getGlobalState()
     return {
         job_status: {
-            id: jobId,
+            id: jobId.toString(),
             url: `http://localhost:${getPortNumber()}${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/${jobId}.json`,
             "status": "queued",
             total: null,
@@ -42,7 +42,7 @@ export function renderCompletedJob(jobId, payload) {
     const globalState = getGlobalState()
     return {
         job_status: {
-            id: jobId,
+            id: jobId.toString(),
             url: `http://localhost:${getPortNumber()}${globalState.globalConfigs.overrideJobStatusUrlPrefix}/api/v2/job_statuses/${jobId}.json`,
             "status": "completed",
             total: payload?.length,
