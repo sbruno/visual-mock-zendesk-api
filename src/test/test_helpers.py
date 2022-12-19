@@ -1,13 +1,12 @@
 
-
 import sys
 import requests
 import json
 import urllib.parse
 import test_recorded
+
 sys.path.append('bn_python_common.zip')
 from bn_python_common import *
-
 
 configText = files.readall('../configs.json', encoding='utf-8')
 configs = json.loads(configText)
@@ -15,7 +14,7 @@ assertEq('/mock.zendesk.com', configs['overrideJobStatusUrlPrefix'])
 
 # we support with+without .json suffix on all endpoints,
 # so run tests twice, once with this True, and once with it False 
-hitEndpointEndingWithJson = True
+hitEndpointEndingWithJson = False
 
 # instead of contacting mock-zendesk, contact recorded responses
 # from a real zendesk instance

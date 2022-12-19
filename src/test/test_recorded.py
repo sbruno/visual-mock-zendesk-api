@@ -1,20 +1,57 @@
 
 '''
 
-These are recorded responses from the actual api.
+To check accuracy, these are recorded responses from the actual api.
+(It's currently fragile because the order must match the tests exactly,
+and there might not be a clear error if they are out of sync.)
 
-How to set this up
-1) run tests and log each send() call, logging endpoint and body and saving to a text file
-2) in that text file, replace the generated ids with real ids.
-# use the calls to users/show_many to see what the test user ids are, then search/replace with real ids
-# use the calls to tickets/create_many to see what the test custom flds are, then search/replace with real custom flds
+Run the tests with replayRecordedResponses=True to use this file.
 
+-------------------------------------------------------------------------------------------
+
+How I got these values,
+(you don't need to do this unless you are contributing to the visual-mock-zendesk-api project)
+* set up zendesk if needed
+    * set up a zendesk trial
+    * create 3 test end users from web ui, no need to have real email addresses
+    * create 3 custom fields from web ui
+    * optional: create 2 triggers,
+        * removeTagWhenPublicCommentPosted and openPostWhenPublicCommentContainingTextPosted,
+        * as described in the triggers section of differences_and_not_yet_implemented.md
+        * use values tag-to-remove-has-processed and open-when-this-text (or whatever's in configs.json)
+* get the ids of your test users and the id of your admin user
+* get the ids of your custom fields
+* edit setupStateIds() and replace the int ids there with the new ids you just got
+* modify send() so that it logs every request endpoint and body, appended to a text file
+    * also at the end have it print the contents of stateIds
+* edit that log text file.
+    * for each item in the contents of stateIds, replace the fake id with the real id
+    * example: the log says stateIds: customFld1=63453. in your zendesk instance the customfld1 id is 10993199398427
+    * do a whole word search/replace from 63453 to 10993199398427
+    * example: the log says stateIds: userId1=43534. in your zendesk instance the first test user id is 1066343245345
+    * do a whole word search/replace from 43534 to 1066343245345
+    * example: the log says stateIds: admin=111. in your zendesk instance the first test user id is 10981611611675
+    * do a whole word search/replace from 111 to 10981611611675
+* now go through each request, send it to zendesk, get the response, and append the response in simulatedResponses
+    * for certain endpoints like users/create_many you might have to type in a fake response
+    * after tickets are generated, you'll have to update the ticket ids,
+    * example: the response from zendesk after creating tickets says the new ids are 20,16,15,17,18,19
+    * stateIds says that ticket1 is 234324 
+    * do a whole word search/replace from 234324 to 20
+    * stateIds says that ticket2 is 567657 
+    * do a whole word search/replace from 567657 to 16
+    * and so on.
+* finally, tests can be run
+    * set replayRecordedResponses=True
+    * run the tests.
 
 '''
 
+# use r''' throughout, instead of ''', so that \" preserves the \ character
+
 simulatedResponses = [
-    # /api/delete_all
     r'''{}''',
+
     r'''
     Error: cannot pass in id
     ''',
@@ -23,7 +60,6 @@ simulatedResponses = [
     Error: missing email
     ''',
     
-    # use r''' instead of ''' so that \" preserves the \
     r'''
 {
   "job_status": {
@@ -34,7 +70,7 @@ simulatedResponses = [
 }
     ''',
     
-    # some guesswork here since a trial account responds with 403 on the call
+    # I wrote this one, it might not be 100% correct.
     r'''
 {
   "job_status": {
@@ -72,8 +108,7 @@ simulatedResponses = [
 }
     ''',
     
-    # some guesswork here since trial responds with 403 on the call
-    # but shouldn't be risky to accept existing IDs
+    # I wrote this one, it might not be 100% correct.
     r'''
 {
   "job_status": {
@@ -1386,7 +1421,6 @@ Error: {
 }
     ''',
     
-    # rearranged comments now that we know created_at time needs to be set when importing comments
     r'''
     {
   "comments": [

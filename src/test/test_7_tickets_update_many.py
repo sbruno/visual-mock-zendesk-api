@@ -7,7 +7,7 @@ def go7TicketsUpdateMany():
         return
     
     import time
-    time.sleep(1) # so that last_updated shows up
+    time.sleep(1.5) # so that last_updated will be different.
     s = r'''{
     "tickets": [
       {
