@@ -42,19 +42,16 @@ export function generateCommentId(persistedState) {
 }
 
 /**
- * Generate a ticket id, randomly chosen integer
- * In actual zendesk these are always increasing
+ * Generate a ticket id, increasing and updating the last generated value persisted in the state
  */
 export function generateTicketId(persistedState) {
-    assert(persistedState['tickets'])
-    for (let i = 0; i < 5; i++) {
-        let candidate = genCandidate()
-        if (!persistedState['tickets'][candidate]) {
-            return candidate
-        }
+    let ticket_id = persistedState['last_ticket_id'] ? persistedState['last_ticket_id'] + 1 : 1
+    // If for any reason a ticket with the new id existed, keep increasing the value
+    while (persistedState.tickets && persistedState.tickets[ticket_id]) {
+        ticket_id++
     }
-
-    assert(false, 'could not generate ticket id')
+    persistedState['last_ticket_id'] = ticket_id
+    return ticket_id
 }
 
 /**

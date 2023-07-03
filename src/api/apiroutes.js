@@ -3,7 +3,7 @@ import { apiGetTicketComments } from "./comments.js"
 import { normalizeId, errNotImplemented } from "./helpers.js"
 import { apiGetJobById } from "./jobresults.js"
 import { apiSearch } from "./search.js"
-import { apiTicketsImportCreateMany, apiTicketsShowMany, apiTicketUpdateMany } from "./tickets.js"
+import { apiTicketsImportCreateMany, apiTicketsShowMany, apiTicketCreate, apiTicketUpdateMany } from "./tickets.js"
 import { apiUsersSearchByEmail, apiUsersCreateMany, apiUsersShowMany } from "./users.js"
 
 /**
@@ -69,6 +69,13 @@ export function apiRoutes(app) {
         wrapHandler(() => {
             const result = apiTicketUpdateMany(req.body)
             res.send(result)
+        }, req, res)
+    })
+
+    register('post', '/api/v2/tickets', (req, res) => {
+        wrapHandler(() => {
+            const result = apiTicketCreate(req.body)
+            res.set('Location', result.url).status(201).send(result)
         }, req, res)
     })
 
