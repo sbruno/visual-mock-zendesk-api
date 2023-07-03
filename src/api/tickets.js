@@ -156,7 +156,43 @@ export function apiTicketUpdateMany(payload) {
     return finalResponse
 }
 
+/**
+ * Endpoint for creating tickets
+ */
+ export function apiTicketCreate(payload) {
+    const globalState = getGlobalStateCopy()
 
+    assert(payload.ticket && payload.ticket.comment && payload.ticket.comment.body, 'comment is required')
+    let ticket = payload.ticket
+    allowInlineNewUser(globalState, ticket, 'requester', 'requester_id')
+    allowInlineNewUser(globalState, ticket, 'submitter', 'submitter_id')
+    normalizeIdIfPresent(ticket, 'requester_id')
+    normalizeIdIfPresent(ticket, 'submitter_id')
+    const resultTicket = transformIncomingTicketImportIntoInternal(globalState, ticket)
+    resultTicket.comment_ids = []
+    if (ticket.comment) {
+        // Allow shorter syntax
+        ticket.comments = [ticket.comment]
+    }
+
+    for (let [j, comment] of (ticket.comments || []).entries()) {
+        comment = allowShortcutStringComment(comment)
+        allowInlineNewUser(globalState, comment, 'author', 'author_id')
+        normalizeIdIfPresent(comment, 'author_id')
+
+        // Tricky zendesk logic... this seems to match what happens when author_id is missing
+        const fallbackAuthorId = j === 0 ? normalizeId(resultTicket.requester_id) : getDefaultAdminId()
+        const c = transformIncomingCommentIntoInternal(globalState, comment, fallbackAuthorId)
+        insertPersistedComment(globalState, c)
+        resultTicket.comment_ids.push(c.id)
+    }
+
+    insertPersistedTicket(globalState, resultTicket)
+
+    saveGlobalState(globalState)
+    payload.url = `https://mock.zendesk.com/api/v2/tickets/${resultTicket.id}.json`
+    return payload
+}
 
 /**
  * Ensures only valid data is being sent in.
@@ -231,8 +267,10 @@ function transformIncomingTicketUpdateIntoInternal(current, incomingUpdate) {
  */
 function transformIncomingTicketImportIntoInternal(globalState, obj) {
     assert(!obj.id, `new ticket - cannot specify id`)
+    // TODO: obj.organization_id is being accepted to allow creating tickets with that property,
+    // but the property is not set
     if (obj.external_id || obj.type || obj.priority || obj.recipient
-        || obj.organization_id || obj.group_id || obj.collaborator_ids || obj.collaborators ||
+        || obj.group_id || obj.collaborator_ids || obj.collaborators ||
         obj.follower_ids || obj.email_cc_ids || obj.via_followup_source_id || obj.macro_ids ||
         obj.ticket_form_id || obj.brand_id) {
         throw new Error("cannot set this property, not yet implemented")
